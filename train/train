@@ -8,38 +8,32 @@ import tensorflow.keras.backend as K
 
 import argparse
 import os
+import json
 
-prefix = '/opt/ml/'
 
-input_path = prefix + 'input/data'
-output_path = os.path.join(prefix, 'output')
-channel_name = 'training'
-training_path = os.path.join(input_path, channel_name)
+from environment import create_trainer_environment
 
 if __name__ =='__main__':
+    env = create_trainer_environment()
+    print('creating SageMaker trainer environment:\n%s' % str(env))
 
-    parser = argparse.ArgumentParser()
-
-    # hyperparameters sent by the client are passed as command-line arguments to the script.
-    parser.add_argument('--epochs', type=int, default=10)
-    parser.add_argument('--batch_size', type=int, default=100)
-    parser.add_argument('--learning_rate', type=float, default=0.1)
-    parser.add_argument('--module', type=str, default="https://tfhub.dev/google/imagenet/mobilenet_v2_100_224/feature_vector/2")
-
-    # input data and model directories
-    parser.add_argument('--model_dir', type=str, default=os.path.join(prefix, 'model'))
-    parser.add_argument('--train', type=str, default=os.environ.get('SM_CHANNEL_TRAIN'))
-    parser.add_argument('--test', type=str, default=os.environ.get('SM_CHANNEL_TEST'))
-
-    args, _ = parser.parse_known_args()
-
+    batch_size = env.hyperparameters.get('batch_size', object_type=int)
+    data_augmentation = env.hyperparameters.get('data_augmentation', default=False, object_type=bool)
+    learning_rate = env.hyperparameters.get('learning_rate', default=.0001, object_type=float)
+    width_shift_range = env.hyperparameters.get('width_shift_range', object_type=float)
+    height_shift_range = env.hyperparameters.get('height_shift_range', object_type=float)
+    epochs = env.hyperparameters.get('epochs', default=10, object_type=int)
+    feature_extractor_url = env.hyperparameters.get('module', default="models/mobilenet_v2_100_224-feature_vector-2", object_type=str)
+    
+    train = env.channel_dirs['train']
+    #test = env.channel_dirs['test']
+    
     data_root = tf.keras.utils.get_file(
-        'flower_photos',args.train,
+            'flower_photos', train,
         untar=True)
 
     image_generator = tf.keras.preprocessing.image.ImageDataGenerator(rescale=1/255)
 
-    feature_extractor_url = args.module
     def feature_extractor(x):
         feature_extractor_module = hub.Module(feature_extractor_url)
         return feature_extractor_module(x)
@@ -81,9 +75,9 @@ if __name__ =='__main__':
 
     steps_per_epoch = image_data.samples//image_data.batch_size
     batch_stats = CollectBatchStats()
-    model.fit((item for item in image_data), epochs=args.epochs,
+    model.fit((item for item in image_data), epochs=epochs,
                         steps_per_epoch=steps_per_epoch,
                         callbacks = [batch_stats])
 
-    export_path = tf.contrib.saved_model.save_keras_model(model, args.model_dir, serving_only=True)
+    export_path = tf.contrib.saved_model.save_keras_model(model, env.model_dir, serving_only=True)
     export_path
