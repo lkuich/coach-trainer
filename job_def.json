@@ -1,0 +1,34 @@
+{
+	"TrainingInputMode": "File",
+	"HyperParameters": {
+		"epochs": "5",
+		"train": "s3://sagemaker-us-west-1-434908186061/flower_photos.tgz"
+	},
+	"InputDataConfig": [
+		{
+			"ChannelName": "train",
+			"DataSource": {
+				"S3DataSource": {
+					"S3DataType": "S3Prefix",
+					"S3Uri": "s3://sagemaker-us-west-1-434908186061/flower_photos.tgz",
+					"S3DataDistributionType": "FullyReplicated"
+				}
+			},
+			"ContentType": "application/json",
+			"CompressionType": "None",
+			"RecordWrapperType": "None"
+		}
+	],
+	"OutputDataConfig": {
+		"KmsKeyId": "",
+		"S3OutputPath": "s3://tensorflow-output/algo_out"
+	},
+	"ResourceConfig": {
+		"InstanceType": "ml.m5.large",
+		"InstanceCount": 1,
+		"VolumeSizeInGB": 10
+	},
+	"StoppingCondition": {
+		"MaxRuntimeInSeconds": 1800
+	}
+}

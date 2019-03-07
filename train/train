@@ -13,6 +13,8 @@ prefix = '/opt/ml/'
 
 input_path = prefix + 'input/data'
 output_path = os.path.join(prefix, 'output')
+channel_name = 'training'
+training_path = os.path.join(input_path, channel_name)
 
 if __name__ =='__main__':
 
@@ -22,6 +24,7 @@ if __name__ =='__main__':
     parser.add_argument('--epochs', type=int, default=10)
     parser.add_argument('--batch_size', type=int, default=100)
     parser.add_argument('--learning_rate', type=float, default=0.1)
+    parser.add_argument('--module', type=str, default="https://tfhub.dev/google/imagenet/mobilenet_v2_100_224/feature_vector/2")
 
     # input data and model directories
     parser.add_argument('--model_dir', type=str, default=os.path.join(prefix, 'model'))
@@ -31,12 +34,12 @@ if __name__ =='__main__':
     args, _ = parser.parse_known_args()
 
     data_root = tf.keras.utils.get_file(
-        'flower_photos','https://storage.googleapis.com/download.tensorflow.org/example_images/flower_photos.tgz',
+        'flower_photos',args.train,
         untar=True)
 
     image_generator = tf.keras.preprocessing.image.ImageDataGenerator(rescale=1/255)
 
-    feature_extractor_url = "https://tfhub.dev/google/imagenet/mobilenet_v2_100_224/feature_vector/2"
+    feature_extractor_url = args.module
     def feature_extractor(x):
         feature_extractor_module = hub.Module(feature_extractor_url)
         return feature_extractor_module(x)
