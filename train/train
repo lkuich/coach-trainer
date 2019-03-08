@@ -9,10 +9,10 @@ import tensorflow.keras.backend as K
 import argparse
 import os
 import json
-import tarfile
-
 
 from environment import create_trainer_environment
+
+prefix = '/opt/ml/'
 
 if __name__ =='__main__':
     env = create_trainer_environment()
@@ -38,6 +38,7 @@ if __name__ =='__main__':
         break
 
     data_root = data_root + '/' + filename
+    print('data_root: ' + data_root)
 
     image_generator = tf.keras.preprocessing.image.ImageDataGenerator(rescale=1/255)
 
@@ -86,5 +87,5 @@ if __name__ =='__main__':
                         steps_per_epoch=steps_per_epoch,
                         callbacks = [batch_stats])
 
-    export_path = tf.contrib.saved_model.save_keras_model(model, env.model_dir, serving_only=True)
+    export_path = tf.contrib.saved_model.save_keras_model(model, os.path.join(prefix, 'model'))  #env.model_dir)
     export_path
