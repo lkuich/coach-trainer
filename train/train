@@ -9,12 +9,17 @@ import tensorflow.keras.backend as K
 import argparse
 import os
 import json
+import tarfile
 
 
 from environment import create_trainer_environment
 
 if __name__ =='__main__':
     env = create_trainer_environment()
+    
+    f = open('/opt/ml/input/config/inputdataconfig.json', 'r')
+    resources = f.read()
+    print('resources: ' + str(resources))
     print('creating SageMaker trainer environment:\n%s' % str(env))
 
     batch_size = env.hyperparameters.get('batch_size', object_type=int)
@@ -22,15 +27,17 @@ if __name__ =='__main__':
     learning_rate = env.hyperparameters.get('learning_rate', default=.0001, object_type=float)
     width_shift_range = env.hyperparameters.get('width_shift_range', object_type=float)
     height_shift_range = env.hyperparameters.get('height_shift_range', object_type=float)
-    epochs = env.hyperparameters.get('epochs', default=10, object_type=int)
+    epochs = env.hyperparameters.get('epochs', default=1, object_type=int)
     feature_extractor_url = env.hyperparameters.get('module', default="models/mobilenet_v2_100_224-feature_vector-2", object_type=str)
     
-    train = env.channel_dirs['train']
-    #test = env.channel_dirs['test']
+    data_root = env.channel_dirs['train']
     
-    data_root = tf.keras.utils.get_file(
-            'flower_photos', train,
-        untar=True)
+    files = os.listdir(data_root)
+    for name in files:
+        filename = name
+        break
+
+    data_root = data_root + '/' + filename
 
     image_generator = tf.keras.preprocessing.image.ImageDataGenerator(rescale=1/255)
 
