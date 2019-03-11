@@ -10,7 +10,7 @@ import os
 import json
 import csv
 
-__PROD__ = os.environ.get('LOCAL') == 'True'
+__PROD__ = os.environ.get('LOCAL') != 'True'
 prefix = '/opt/ml/'
 
 if __name__ =='__main__':
@@ -91,5 +91,5 @@ if __name__ =='__main__':
         writer.writerows(label_names)
     csvFile.close()
 
-    export_path = tf.contrib.saved_model.save_keras_model(model, os.path.join(prefix, 'model', serving_only=True))
+    export_path = tf.contrib.saved_model.save_keras_model(model, os.path.join(prefix, 'model'), serving_only=True)
     export_path # print
