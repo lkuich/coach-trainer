@@ -9,16 +9,15 @@ import tensorflow.keras.backend as K
 import argparse
 import os
 import json
+import csv
 
-from environment import create_trainer_environment
+#from environment import create_trainer_environment
 
 prefix = '/opt/ml/'
 
 if __name__ =='__main__':
     env = create_trainer_environment()
     
-    batch_size = env.hyperparameters.get('batch_size', object_type=int)
-    data_augmentation = env.hyperparameters.get('data_augmentation', default=False, object_type=bool)
     epochs = env.hyperparameters.get('epochs', default=1, object_type=int)
     feature_extractor_url = env.hyperparameters.get('module', default="models/mobilenet_v2_100_224-feature_vector-2", object_type=str)
     
@@ -33,7 +32,7 @@ if __name__ =='__main__':
     labels = []
     for label in os.listdir(data_root):
         labels.append(label)
-    with open('labels.csv', 'w') as csvFile:
+    with open(os.path.join(prefix, 'model', 'labels.csv'), 'w') as csvFile:
         writer = csv.writer(csvFile)
         writer.writerows(labels)
     csvFile.close()
