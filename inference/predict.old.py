@@ -24,15 +24,12 @@ import tensorflow as tf
 
 
 def load_graph(model_file):
-  graph = tf.Graph()
-  graph_def = tf.GraphDef()
-
-  with open(model_file, "rb") as f:
-    graph_def.ParseFromString(f.read())
-  with graph.as_default():
-    tf.import_graph_def(graph_def)
-
-  return graph
+    with tf.Session(graph=tf.Graph()) as sess:
+        tf.saved_model.loader.load(sess, ["serve"], model_file)
+        graph_def = tf.GraphDef()
+        graph = tf.get_default_graph()
+        #print(graph.get_operations())
+        return graph
 
 
 def read_tensor_from_image_file(file_name,
@@ -81,7 +78,7 @@ if __name__ == "__main__":
   input_width = 299
   input_mean = 0
   input_std = 255
-  input_layer = "input"
+  input_layer = "top_input"
   output_layer = "InceptionV3/Predictions/Reshape_1"
 
   parser = argparse.ArgumentParser()
