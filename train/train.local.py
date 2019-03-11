@@ -11,15 +11,11 @@ import os
 import json
 import csv
 
-from environment import create_trainer_environment
-
 prefix = '/opt/ml/'
 
 if __name__ =='__main__':
-    env = create_trainer_environment()
-    
-    epochs = env.hyperparameters.get('epochs', default=1, object_type=int)
-    feature_extractor_url = env.hyperparameters.get('module', default="models/mobilenet_v2_100_224-feature_vector-2", object_type=str)
+    epochs = 100
+    feature_extractor_url = "models/mobilenet_v2_100_224-feature_vector-2"
     
     data_root = env.channel_dirs['train']
     
