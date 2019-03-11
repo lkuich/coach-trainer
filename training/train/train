@@ -86,7 +86,6 @@ if __name__ =='__main__':
 
     label_names = sorted(image_data.class_indices.items(), key=lambda pair:pair[1])
     label_names = [key.title() for key, value in label_names]
-    label_names
 
     label_txt = ''
     for l in label_names:
