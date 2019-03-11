@@ -7,6 +7,7 @@ from tensorflow.keras import layers
 import tensorflow.keras.backend as K
 
 import os
+import sys
 import json
 import csv
 
@@ -87,11 +88,12 @@ if __name__ =='__main__':
     label_names = [key.title() for key, value in label_names]
     label_names
 
-    label_txt = None
+    label_txt = ''
     for l in label_names:
         label_txt += l + '\n'
 
-    export_path = tf.contrib.saved_model.save_keras_model(model, os.path.join(prefix, 'model'))
+    export_path = tf.contrib.saved_model.save_keras_model(model, os.path.join(prefix, 'model')).decode(sys.stdout.encoding) 
+    print('Export Path: ' + export_path)
     
     # Write labels to export_path
     with open(os.path.join(export_path, 'labels.csv'), 'w') as file:
