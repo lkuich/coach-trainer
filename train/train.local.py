@@ -86,8 +86,8 @@ if __name__ =='__main__':
     batch_stats = CollectBatchStats()
     model.fit((item for item in image_data), epochs=epochs,
                         steps_per_epoch=steps_per_epoch,
-                        callbacks = [batch_stats],
-                        validation_split=int(image_data.samples*0.1))
+                        callbacks = [batch_stats]
+                        validation_split=int(image_data.samples*0.1)
 
     export_path = tf.contrib.saved_model.save_keras_model(model, os.path.join(prefix, 'model', serving_only=True))  #env.model_dir)
     export_path
