@@ -6,7 +6,6 @@ import tensorflow_hub as hub
 from tensorflow.keras import layers
 import tensorflow.keras.backend as K
 
-import argparse
 import os
 import json
 import csv

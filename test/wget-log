@@ -1,6 +1,0 @@
---2019-03-11 01:40:42--  https://s3.us-west-1.amazonaws.com/sagemaker-us-west-1-434908186061/output/15e33df2-1bce-4982-8648-769ccc5ddc94/output/model.tar.gz?response-content-disposition=attachment
-Resolving s3.us-west-1.amazonaws.com (s3.us-west-1.amazonaws.com)... 52.219.116.80
-Connecting to s3.us-west-1.amazonaws.com (s3.us-west-1.amazonaws.com)|52.219.116.80|:443... connected.
-HTTP request sent, awaiting response... 400 Bad Request
-2019-03-11 01:40:42 ERROR 400: Bad Request.
-
