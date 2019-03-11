@@ -86,10 +86,14 @@ if __name__ =='__main__':
     label_names = sorted(image_data.class_indices.items(), key=lambda pair:pair[1])
     label_names = [key.title() for key, value in label_names]
     label_names
-    with open(os.path.join(prefix, 'model', 'labels.csv'), 'w') as csvFile:
-        writer = csv.writer(csvFile)
-        writer.writerows(label_names)
-    csvFile.close()
 
-    export_path = tf.contrib.saved_model.save_keras_model(model, os.path.join(prefix, 'model'), serving_only=True)
+    label_txt = None
+    for l in label_names:
+        label_txt += l + '\n'
+
+    with open(os.path.join(prefix, 'model', 'labels.csv'), 'w') as file:
+        file.write(label_txt)
+    file.close()
+
+    export_path = tf.contrib.saved_model.save_keras_model(model, os.path.join(prefix, 'model'))
     export_path # print

@@ -5,9 +5,11 @@ import tensorflow as tf
 import os
 import csv
 
-model = tf.contrib.saved_model.load_keras_model('model.pb')
+prefix = '/opt/ml/models'
+
+model = tf.contrib.saved_model.load_keras_model(os.path.join(prefix, 'model.pb'))
 lables = []
-with open('labels.csv') as csvfile:
+with open(os.path.join(prefix, 'labels.csv')) as csvfile:
     readCSV = csv.reader(csvfile, delimiter=',')
     lables = [row in readCSV]
     '''
@@ -17,7 +19,7 @@ with open('labels.csv') as csvfile:
 print(lables)
 
 image = image.load_img('test.jpg', target_size=(224,224))
-model.predict(image)
+prediction = model.predict(image)
 
 
 '''
