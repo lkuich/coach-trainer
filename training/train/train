@@ -10,7 +10,7 @@ import os
 import json
 import csv
 
-__PROD__ = True
+__PROD__ = os.environ.get('LOCAL') == 'True'
 prefix = '/opt/ml/'
 
 if __name__ =='__main__':
