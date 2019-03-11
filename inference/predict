@@ -1,30 +1,42 @@
 #!/usr/bin/env python3
 
-from tf.keras.preprocessing import image
 import tensorflow as tf
+from tensorflow.keras.preprocessing import image
 import os
 import csv
 
-prefix = '/opt/ml/models'
+prefix = '/opt/ml/model/1552280906'
 
-model = tf.contrib.saved_model.load_keras_model(os.path.join(prefix, 'model.pb'))
-lables = []
-with open(os.path.join(prefix, 'labels.csv')) as csvfile:
-    readCSV = csv.reader(csvfile, delimiter=',')
-    lables = [row in readCSV]
+def load_graph(model_file):
+  graph = tf.Graph()
+  graph_def = tf.GraphDef()
+
+  with open(model_file, "rb") as f:
+    graph_def.ParseFromString(f.read())
+  with graph.as_default():
+    tf.import_graph_def(graph_def)
+
+  return graph
+
+if __name__ == "__main__":
+    model = load_graph(os.path.join(prefix, 'saved_model.pb'))
+    lables = []
+    with open(os.path.join(prefix, 'labels.csv')) as csvfile:
+        readCSV = csv.reader(csvfile, delimiter=',')
+        lables = [row in readCSV]
+        '''
+        for row in readCSV:
+            lables.append(row)
+        '''
+    print(lables)
+
+    image = image.load_img('rose.jpg', target_size=(224,224))
+    prediction = model.predict(image)
+
+
     '''
-    for row in readCSV:
-        lables.append(row)
+    result_batch = model.predict(image_batch)
+
+    labels_batch = label_names[np.argmax(result_batch, axis=-1)]
+    labels_batch
     '''
-print(lables)
-
-image = image.load_img('test.jpg', target_size=(224,224))
-prediction = model.predict(image)
-
-
-'''
-result_batch = model.predict(image_batch)
-
-labels_batch = label_names[np.argmax(result_batch, axis=-1)]
-labels_batch
-'''
