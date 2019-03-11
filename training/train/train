@@ -91,6 +91,10 @@ if __name__ =='__main__':
     for l in label_names:
         label_txt += l + '\n'
 
+    tf_graph = sess.graph
+    tf.train.write_graph(tf_graph.as_graph_def(), 'freeze', 'graph.pb', as_text=False)
+    
+    ''' WORKING
     export_path = tf.contrib.saved_model.save_keras_model(model, os.path.join(prefix, 'model')).decode(sys.stdout.encoding) 
     print('Export Path: ' + export_path)
     
@@ -98,3 +102,4 @@ if __name__ =='__main__':
     with open(os.path.join(export_path, 'labels.csv'), 'w') as file:
         file.write(label_txt)
     file.close()
+    '''

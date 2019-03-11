@@ -37,7 +37,7 @@ def load_labels(label_file):
     return label
 
 if __name__ == "__main__":
-    model = load_sess('saved_model.pb')
+    model = load_sess('graph.pb')
     #model = tf.keras.models.load_model('saved_model.pb')
     #model = load_graph(os.path.join(prefix, 'saved_model.pb'))
     lables = load_labels(os.path.join(prefix, 'labels.csv'))
