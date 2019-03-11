@@ -28,7 +28,7 @@ if __name__ =='__main__':
             break
         data_root = data_root + '/' + filename
     else:
-        epochs = 10
+        epochs = 1
         feature_extractor_url = "models/mobilenet_v2_100_224-feature_vector-2"
         data_root = data_root = tf.keras.utils.get_file(
             'flower_photos','https://storage.googleapis.com/download.tensorflow.org/example_images/flower_photos.tgz',
