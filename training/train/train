@@ -91,9 +91,9 @@ if __name__ =='__main__':
     for l in label_names:
         label_txt += l + '\n'
 
-    with open(os.path.join(prefix, 'model', 'labels.csv'), 'w') as file:
+    export_path = tf.contrib.saved_model.save_keras_model(model, os.path.join(prefix, 'model'))
+    
+    # Write labels to export_path
+    with open(os.path.join(export_path, 'labels.csv'), 'w') as file:
         file.write(label_txt)
     file.close()
-
-    export_path = tf.contrib.saved_model.save_keras_model(model, os.path.join(prefix, 'model'))
-    export_path # print
