@@ -6,8 +6,6 @@ import argparse
 import os
 import sys
 
-from google.protobuf import text_format
-
 from tensorflow.core.framework import graph_pb2
 from tensorflow.python.framework import dtypes
 from tensorflow.python.framework import graph_io
@@ -18,8 +16,7 @@ from tensorflow.python.tools import optimize_for_inference_lib
 
 def optimize(input, output, input_names, output_names):
   placeholder_type_enum = str(dtypes.float32.as_datatype_enum)
-  frozen_graph = True
-    
+  
   if not gfile.Exists(input):
     print("Input graph file '" + input + "' does not exist!")
     return False
@@ -27,10 +24,7 @@ def optimize(input, output, input_names, output_names):
   input_graph_def = graph_pb2.GraphDef()
   with gfile.Open(input, "rb") as f:
     data = f.read()
-    if frozen_graph:
-      input_graph_def.ParseFromString(data)
-    else:
-      text_format.Merge(data.decode("utf-8"), input_graph_def)
+    input_graph_def.ParseFromString(data)
 
   output_graph_def = optimize_for_inference_lib.optimize_for_inference(
       input_graph_def,

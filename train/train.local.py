@@ -11,13 +11,21 @@ import os
 import json
 import csv
 
+__PROD__ = False
 prefix = '/opt/ml/'
 
 if __name__ =='__main__':
-    epochs = 100
-    feature_extractor_url = "models/mobilenet_v2_100_224-feature_vector-2"
-    
-    data_root = env.channel_dirs['train']
+    if __PROD__:
+        from environment import create_trainer_environment
+        env = create_trainer_environment()
+        
+        epochs = env.hyperparameters.get('epochs', default=1, object_type=int)
+        feature_extractor_url = env.hyperparameters.get('module', default="models/mobilenet_v2_100_224-feature_vector-2", object_type=str)
+        data_root = env.channel_dirs['train']
+    else:
+        epochs = 10
+        feature_extractor_url = "models/mobilenet_v2_100_224-feature_vector-2"
+        data_root = 'https://storage.googleapis.com/download.tensorflow.org/example_images/flower_photos.tgz'
     
     files = os.listdir(data_root)
     for name in files:
@@ -25,14 +33,6 @@ if __name__ =='__main__':
         break
 
     data_root = data_root + '/' + filename
-    labels = []
-    for label in os.listdir(data_root):
-        labels.append(label)
-    with open(os.path.join(prefix, 'model', 'labels.csv'), 'w') as csvFile:
-        writer = csv.writer(csvFile)
-        writer.writerows(labels)
-    csvFile.close()
-
 
     image_generator = tf.keras.preprocessing.image.ImageDataGenerator(rescale=1/255)
 
@@ -84,5 +84,13 @@ if __name__ =='__main__':
                         callbacks = [batch_stats],
                         validation_split=int(image_data.samples*0.1))
 
-    export_path = tf.contrib.saved_model.save_keras_model(model, os.path.join(prefix, 'model', serving_only=True))  #env.model_dir)
-    export_path
+    label_names = sorted(image_data.class_indices.items(), key=lambda pair:pair[1])
+    label_names = [key.title() for key, value in label_names]
+    label_names
+    with open(os.path.join(prefix, 'model', 'labels.csv'), 'w') as csvFile:
+        writer = csv.writer(csvFile)
+        writer.writerows(label_names)
+    csvFile.close()
+
+    export_path = tf.contrib.saved_model.save_keras_model(model, os.path.join(prefix, 'model', serving_only=True))
+    export_path # print
