@@ -22,18 +22,18 @@ if __name__ =='__main__':
         epochs = env.hyperparameters.get('epochs', default=1, object_type=int)
         feature_extractor_url = env.hyperparameters.get('module', default="models/mobilenet_v2_100_224-feature_vector-2", object_type=str)
         data_root = env.channel_dirs['train']
+        files = os.listdir(data_root)
+        for name in files:
+            filename = name
+            break
+        data_root = data_root + '/' + filename
     else:
         epochs = 10
         feature_extractor_url = "models/mobilenet_v2_100_224-feature_vector-2"
-        data_root = 'https://storage.googleapis.com/download.tensorflow.org/example_images/flower_photos.tgz'
+        data_root = data_root = tf.keras.utils.get_file(
+            'flower_photos','https://storage.googleapis.com/download.tensorflow.org/example_images/flower_photos.tgz',
+            untar=True)
     
-    files = os.listdir(data_root)
-    for name in files:
-        filename = name
-        break
-
-    data_root = data_root + '/' + filename
-
     image_generator = tf.keras.preprocessing.image.ImageDataGenerator(rescale=1/255)
 
     def feature_extractor(x):
