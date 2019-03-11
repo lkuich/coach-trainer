@@ -76,8 +76,8 @@ if __name__ =='__main__':
             self.batch_acc.append(logs['acc'])
 
     steps_per_epoch = image_data.samples//image_data.batch_size
-    print('steps/epoch: ' + steps_per_epoch)
-    print('steps: ' + steps_per_epoch * epochs)
+    print('steps/epoch: ' + str(steps_per_epoch))
+    print('steps: ' + str(steps_per_epoch * epochs))
     batch_stats = CollectBatchStats()
     model.fit((item for item in image_data), epochs=epochs,
                         steps_per_epoch=steps_per_epoch,

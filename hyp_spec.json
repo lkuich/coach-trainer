@@ -12,12 +12,5 @@
 		"IsTunable": false,
 		"IsRequired": false,
 		"DefaultValue": "5"
-	},
-	{
-		"Name": "train",
-		"Description": "Train",
-		"Type": "FreeText",
-		"IsTunable": false,
-		"IsRequired": true
 	}
 ]
