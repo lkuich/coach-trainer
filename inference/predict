@@ -37,9 +37,31 @@ def load_labels(label_file):
     return label
 
 if __name__ == "__main__":
-    model = load_sess('graph.pb')
-    #model = tf.keras.models.load_model('saved_model.pb')
-    #model = load_graph(os.path.join(prefix, 'saved_model.pb'))
+  graph = load_graph('graph.pb')
+  lables = load_labels(os.path.join(prefix, 'labels.csv'))  
+
+  #for op in graph.get_operations():
+  #  print(graph.get_operation_by_name(op.name))
+  
+  input_name = "import/softmax_input/Softmax"
+  output_name = "import/lambda_input_input"
+
+  #input_name = "import/lambda_input_input"
+  #output_name = "import/softmax_input_target"
+  input_operation = graph.get_operation_by_name(input_name)
+  output_operation = graph.get_operation_by_name(output_name)
+
+  print(input_operation)
+  print(output_operation)
+
+if __name__ == "#__main__":
+    #model = load_graph('graph.pb')
+    #print(model.get_operations())
+    
+    #nodes = [n.name for n in model.as_graph_def().node]
+    #print(nodes)
+    #model = tf.keras.models.load_model('graph.pb')
+    model = load_graph('graph.pb')
     lables = load_labels(os.path.join(prefix, 'labels.csv'))
     '''
     with open(os.path.join(prefix, 'labels.csv')) as csvfile:

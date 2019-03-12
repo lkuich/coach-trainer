@@ -34,8 +34,8 @@ def load_graph(model_file):
   return graph
 
 def read_tensor_from_image_file(file_name,
-                                input_height=299,
-                                input_width=299,
+                                input_height=224,
+                                input_width=224,
                                 input_mean=0,
                                 input_std=255):
   input_name = "file_reader"
@@ -75,12 +75,14 @@ if __name__ == "__main__":
   model_file = \
     "tensorflow/examples/label_image/data/inception_v3_2016_08_28_frozen.pb"
   label_file = "tensorflow/examples/label_image/data/imagenet_slim_labels.txt"
-  input_height = 299
-  input_width = 299
+  input_height = 224
+  input_width = 224
   input_mean = 0
   input_std = 255
-  input_layer = "top_input"
-  output_layer = "InceptionV3/Predictions/Reshape_1"
+  output_layer = "import/softmax_input/Softmax"
+  input_layer = "import/lambda_input_input"
+  #input_layer = "import/lambda_input_input"
+  #output_layer = "import/Placeholder"
 
   parser = argparse.ArgumentParser()
   parser.add_argument("--image", help="image to be processed")
@@ -121,12 +123,13 @@ if __name__ == "__main__":
       input_mean=input_mean,
       input_std=input_std)
 
-  input_name = "import/" + input_layer
-  output_name = "import/" + output_layer
+  input_name = input_layer
+  output_name = output_layer
   input_operation = graph.get_operation_by_name(input_name)
   output_operation = graph.get_operation_by_name(output_name)
 
   with tf.Session(graph=graph) as sess:
+    sess.run(tf.global_variables_initializer())
     results = sess.run(output_operation.outputs[0], {
         input_operation.outputs[0]: t
     })
@@ -136,3 +139,4 @@ if __name__ == "__main__":
   labels = load_labels(label_file)
   for i in top_k:
     print(labels[i], results[i])
+
