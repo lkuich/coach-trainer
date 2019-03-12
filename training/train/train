@@ -6,6 +6,9 @@ import tensorflow_hub as hub
 from tensorflow.keras import layers
 import tensorflow.keras.backend as K
 
+from tensorflow.python.tools import freeze_graph
+from tensorflow.python.tools import optimize_for_inference_lib
+
 import os
 import sys
 import json
@@ -48,14 +51,18 @@ if __name__ =='__main__':
         print("Label batch shape: ", label_batch.shape)
         break
 
-    features_extractor_layer = layers.Lambda(feature_extractor, input_shape=IMAGE_SIZE+[3], name="top_input")
+    features_extractor_layer = layers.Lambda(feature_extractor, input_shape=IMAGE_SIZE+[3])
     features_extractor_layer.trainable = False
 
     model = tf.keras.Sequential([
         features_extractor_layer,
-        layers.Dense(image_data.num_classes, activation='softmax')
+        layers.Dense(image_data.num_classes, activation='softmax', name='top_input')
     ])
     model.summary()
+    
+    print('--- OUTPUT NODES ---')
+    output_nodes = [node.op.name for node in model.outputs]
+    print(output_nodes)
 
     init = tf.global_variables_initializer()
     sess = K.get_session()
