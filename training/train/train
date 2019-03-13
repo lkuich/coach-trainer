@@ -9,6 +9,8 @@ import tensorflow.keras.backend as K
 from tensorflow.python.tools import freeze_graph
 from tensorflow.python.tools import optimize_for_inference_lib
 
+from tensorflow.python.tools import optimize_for_inference_lib
+
 import os
 import sys
 import json
@@ -99,7 +101,19 @@ if __name__ =='__main__':
         label_txt += l + '\n'
 
     tf_graph = sess.graph
-    tf.train.write_graph(tf_graph.as_graph_def(), 'freeze', 'graph.pb', as_text=False)
+
+    #tf.train.write_graph(output_graph_def, 'freeze', 'graph.pb', as_text=False)
+    output_graph_def = tf.graph_util.convert_variables_to_constants(
+      sess, output_graph_def, ["import/lambda_input_input"])
+      
+    mobile_output_graph_def = optimize_for_inference_lib.optimize_for_inference(
+        tf_graph.as_graph_def(),
+        ["import/lambda_input_input"], # an array of the input node(s)
+        ['import/softmax_input/Softmax'], # an array of output nodes
+        tf.float32.as_datatype_enum)
+
+    with tf.gfile.FastGFile('final', 'wb') as f:
+        f.write(mobile_output_graph_def.SerializeToString())
    
     '''
     export_path = tf.contrib.saved_model.save_keras_model(model, os.path.join(prefix, 'model')).decode(sys.stdout.encoding) 
