@@ -36,6 +36,10 @@ def load_labels(label_file):
         label.append(l.rstrip())
     return label
 
+def print_ops(graph):
+    for op in graph.get_operations():
+        print(str(op.name))
+
 if __name__ == "__main__":
   graph = load_graph('graph.pb')
   lables = load_labels(os.path.join(prefix, 'labels.csv'))  
