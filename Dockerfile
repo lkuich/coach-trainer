@@ -7,7 +7,7 @@ ENV CUDNN_VERSION=7.4.1.5-1+cuda10.0
 
 RUN apt-get update && apt-get install -y --no-install-recommends \
         ca-certificates \
-        cuda-command-line-tools-9-0 \
+        cuda-command-line-tools-10-0 \
         cuda-cublas-10-0 \
         cuda-cufft-10-0 \
         cuda-curand-10-0 \
@@ -15,17 +15,20 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
         cuda-cusparse-10-0 \
         libcudnn7=${CUDNN_VERSION} \
         libcudnn7-dev=7.4.1.5-1+cuda10.0 \
+        python3 \
+        python3-dev \
+        python3-setuptools \
+        python3-wheel \
+        python3-pip \
         && \
-    sudo apt-get update && \
-        sudo apt-get install nvinfer-runtime-trt-repo-ubuntu1604-5.0.2-ga-cuda10.0 \
-        && sudo apt-get update \
-        && sudo apt-get install -y --no-install-recommends libnvinfer-dev=5.0.2-1+cuda10.0 && \
+    apt-get update && \
+        apt-get install nvinfer-runtime-trt-repo-ubuntu1604-5.0.2-ga-cuda10.0 \
+        && apt-get update \
+        && apt-get install -y --no-install-recommends libnvinfer-dev=5.0.2-1+cuda10.0 && \
     rm -rf /var/lib/apt/lists/* && \
     rm /usr/lib/x86_64-linux-gnu/libnvinfer_plugin* && \
     rm /usr/lib/x86_64-linux-gnu/libnvcaffe_parser* && \
     rm /usr/lib/x86_64-linux-gnu/libnvparsers*
-
-RUN apt-get -y update && apt-get install -y --no-install-recommends python3 python3-dev python3-setuptools python3-wheel python3-pip && rm -rf /var/lib/apt/lists/*
 
 # Here we get all python packages.
 # There's substantial overlap between scipy and numpy that we eliminate by
