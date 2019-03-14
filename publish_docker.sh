@@ -1,4 +1,4 @@
 #!/bin/bash
-docker build -t tensorflow-cpu .
-docker tag tensorflow-cpu:latest 434908186061.dkr.ecr.us-west-1.amazonaws.com/tensorflow-cpu:latest
-docker push 434908186061.dkr.ecr.us-west-1.amazonaws.com/tensorflow-cpu:latest
+docker build -t tensorflow-gpu .
+docker tag tensorflow-gpu:latest 434908186061.dkr.ecr.us-east-1.amazonaws.com/tensorflow-gpu:latest
+docker push 434908186061.dkr.ecr.us-east-1.amazonaws.com/tensorflow-gpu:latest
