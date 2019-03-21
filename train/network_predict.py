@@ -5,7 +5,15 @@ from tensorflow.keras.preprocessing import image
 import os
 import csv
 import numpy as np
-import argparse
+from werkzeug.utils import secure_filename
+from flask import Flask, Response, request, redirect, url_for
+
+prefix = '/opt/ml/model/'
+
+UPLOAD_FOLDER = '/opt/ml/'
+ALLOWED_EXTENSIONS = set(['png', 'jpg', 'jpeg'])
+
+app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 
 def load_graph(model_file):
   graph = tf.Graph()
@@ -52,17 +60,9 @@ def read_tensor_from_image_file(file_name, input_height=224, input_width=224, in
 def get_input_args():
   parser = argparse.ArgumentParser()
   parser.add_argument("--image", help="image to be processed")
-  parser.add_argument("--model", help="model ID")
   return parser.parse_args()
 
-def main():
-  args = get_input_args()
-  if (args.image is None or args.model is None):
-    print("Need exactly 2 arguments")
-    return
-
-  prefix = '/opt/ml/model/' + args.model + '/'
-
+def predict(image):
   graph = load_graph(os.path.join(prefix, 'model.pb'))
   labels = load_labels(os.path.join(prefix, 'labels.csv'))  
 
@@ -72,7 +72,7 @@ def main():
   input_operation = graph.get_operation_by_name(input_name)
   output_operation = graph.get_operation_by_name(output_name)
 
-  t = read_tensor_from_image_file(args.image)
+  t = read_tensor_from_image_file(image)
   
   with tf.Session(graph=graph) as sess:
     sess.run(tf.global_variables_initializer())
@@ -82,8 +82,27 @@ def main():
   results = np.squeeze(results)
 
   top_k = results.argsort()[-5:][::-1]
+  r = []
   for i in top_k:
-    print(labels[i], results[i])
+    r.append(str(labels[i] + ' ' + results[i]))
+    
+  return r
 
-if __name__ == "__main__":
-  main()
+# The flask app for serving predictions
+app = Flask(__name__)
+
+@app.route('/ping', methods=['GET'])
+def ping():
+    return Response(response='\n', status=200, mimetype='application/json')
+
+@app.route('/invocations', methods=['POST'])
+def transformation():
+  file = request.files['file']
+  if file:
+      filename = secure_filename(file.filename)
+      filepath = os.path.join(app.config['UPLOAD_FOLDER'], filename)
+      file.save(filepath)
+
+  result = predict(filepath);
+
+  return Response(response=result, status=200, mimetype='application/json')
