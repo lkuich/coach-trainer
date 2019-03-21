@@ -1,14 +1,11 @@
 #!/usr/bin/env python3
 
-#from google.protobuf import text_format
 import tensorflow as tf
 from tensorflow.keras.preprocessing import image
 import os
 import csv
-
-#https://www.tensorflow.org/tutorials/keras/save_and_restore_models
-
-prefix = 'opt/ml/model/1552280906'
+import numpy as np
+import argparse
 
 def load_graph(model_file):
   graph = tf.Graph()
@@ -21,14 +18,6 @@ def load_graph(model_file):
     tf.import_graph_def(graph_def)
   return graph
 
-def load_sess(model_file):
-  with tf.Session(graph=tf.Graph()) as sess:
-      tf.saved_model.loader.load(sess, ["serve"], prefix) #model_file)
-      graph_def = tf.GraphDef()
-      graph = tf.get_default_graph()
-      #print(graph.get_operations())
-      return graph
-
 def load_labels(label_file):
     label = []
     proto_as_ascii_lines = tf.gfile.GFile(label_file).readlines()
@@ -36,53 +25,65 @@ def load_labels(label_file):
         label.append(l.rstrip())
     return label
 
-def print_ops(graph):
-    for op in graph.get_operations():
-        print(str(op.name))
+def read_tensor_from_image_file(file_name, input_height=224, input_width=224, input_mean=0, input_std=255):
+  input_name = "file_reader"
+  output_name = "normalized"
+  file_reader = tf.read_file(file_name, input_name)
+  if file_name.endswith(".png"):
+    image_reader = tf.image.decode_png(
+        file_reader, channels=3, name="png_reader")
+  elif file_name.endswith(".gif"):
+    image_reader = tf.squeeze(
+        tf.image.decode_gif(file_reader, name="gif_reader"))
+  elif file_name.endswith(".bmp"):
+    image_reader = tf.image.decode_bmp(file_reader, name="bmp_reader")
+  else:
+    image_reader = tf.image.decode_jpeg(
+        file_reader, channels=3, name="jpeg_reader")
+  float_caster = tf.cast(image_reader, tf.float32)
+  dims_expander = tf.expand_dims(float_caster, 0)
+  resized = tf.image.resize_bilinear(dims_expander, [input_height, input_width])
+  normalized = tf.divide(tf.subtract(resized, [input_mean]), [input_std])
+  sess = tf.Session()
+  result = sess.run(normalized)
 
-if __name__ == "__main__":
-  graph = load_graph('graph.pb')
-  lables = load_labels(os.path.join(prefix, 'labels.csv'))  
+  return result
 
-  #for op in graph.get_operations():
-  #  print(graph.get_operation_by_name(op.name))
-  
-  input_name = "import/softmax_input/Softmax"
-  output_name = "import/lambda_input_input"
+def get_input_args():
+  parser = argparse.ArgumentParser()
+  parser.add_argument("--image", help="image to be processed")
+  parser.add_argument("--model", help="model ID")
+  return parser.parse_args()
 
-  #input_name = "import/lambda_input_input"
-  #output_name = "import/softmax_input_target"
+def main():
+  args = get_input_args()
+  if (args.image is None or args.model is None):
+    print("Need exactly 2 arguments")
+    return
+
+  prefix = '/opt/ml/model/' + args.model + '/'
+
+  graph = load_graph(os.path.join(prefix, 'model.pb'))
+  labels = load_labels(os.path.join(prefix, 'labels.csv'))  
+
+  output_name = "import/softmax_input/Softmax"
+  input_name = "import/lambda_input_input"
+
   input_operation = graph.get_operation_by_name(input_name)
   output_operation = graph.get_operation_by_name(output_name)
 
-  print(input_operation)
-  print(output_operation)
+  t = read_tensor_from_image_file(args.image)
+  
+  with tf.Session(graph=graph) as sess:
+    sess.run(tf.global_variables_initializer())
+    results = sess.run(output_operation.outputs[0], {
+        input_operation.outputs[0]: t
+    })
+  results = np.squeeze(results)
 
-if __name__ == "#__main__":
-    #model = load_graph('graph.pb')
-    #print(model.get_operations())
-    
-    #nodes = [n.name for n in model.as_graph_def().node]
-    #print(nodes)
-    #model = tf.keras.models.load_model('graph.pb')
-    model = load_graph('graph.pb')
-    lables = load_labels(os.path.join(prefix, 'labels.csv'))
-    '''
-    with open(os.path.join(prefix, 'labels.csv')) as csvfile:
-        readCSV = csv.reader(csvfile, delimiter=',')
-        labels = []
-        for row in readCSV:
-            labels = labels + row
-    '''
-    print(lables)
+  top_k = results.argsort()[-5:][::-1]
+  for i in top_k:
+    print(labels[i], results[i])
 
-    image = image.load_img('rose.jpg', target_size=(224,224))
-    prediction = model.predict(image)
-
-
-    '''
-    result_batch = model.predict(image_batch)
-
-    labels_batch = label_names[np.argmax(result_batch, axis=-1)]
-    labels_batch
-    '''
+if __name__ == "__main__":
+  main()
