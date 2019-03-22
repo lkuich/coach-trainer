@@ -24,7 +24,7 @@ if __name__ =='__main__':
         
         epochs = env.hyperparameters.get('epochs', default=1, object_type=int)
         steps = env.hyperparameters.get('steps', default=0, object_type=int)
-        feature_extractor_url = env.hyperparameters.get('module', default="models/mobilenet_v2_100_224-feature_vector-2", object_type=str)
+        feature_extractor_url = os.path.join('models', env.hyperparameters.get('module', default="mobilenet_v2_100_224-feature_vector-2", object_type=str))
         data_root = env.channel_dirs['train']
         files = os.listdir(data_root)
         for name in files:
