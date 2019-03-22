@@ -23,6 +23,7 @@ if __name__ =='__main__':
         env = create_trainer_environment()
         
         epochs = env.hyperparameters.get('epochs', default=1, object_type=int)
+        steps = env.hyperparameters.get('steps', default=0, object_type=int)
         feature_extractor_url = env.hyperparameters.get('module', default="models/mobilenet_v2_100_224-feature_vector-2", object_type=str)
         data_root = env.channel_dirs['train']
         files = os.listdir(data_root)
@@ -32,12 +33,14 @@ if __name__ =='__main__':
         data_root = data_root + '/' + filename
     else:
         epochs = 1
+        steps = 0
         feature_extractor_url = "models/mobilenet_v2_100_224-feature_vector-2"
-        data_root = data_root = tf.keras.utils.get_file(
+        data_root = tf.keras.utils.get_file(
             'flower_photos','https://storage.googleapis.com/download.tensorflow.org/example_images/flower_photos.tgz',
             untar=True)
     
     output_dir = os.path.join(prefix, 'model')
+    print('output_dir: ' + output_dir)
 
     image_generator = tf.keras.preprocessing.image.ImageDataGenerator(rescale=1/255)
 
@@ -89,6 +92,9 @@ if __name__ =='__main__':
             self.batch_acc.append(logs['acc'])
 
     steps_per_epoch = image_data.samples//image_data.batch_size
+    if steps > 0:
+        steps_per_epoch = steps
+
     print('steps/epoch: ' + str(steps_per_epoch))
     print('steps: ' + str(steps_per_epoch * epochs))
     batch_stats = CollectBatchStats()
