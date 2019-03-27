@@ -1,0 +1,45 @@
+[
+	{
+		"Name": "epochs",
+		"Description": "Epochs",
+		"Type": "Continuous",
+		"Range": {
+			"ContinuousParameterRangeSpecification": {
+				"MinValue": "1",
+				"MaxValue": "5000"
+			}
+		},
+		"IsTunable": false,
+		"IsRequired": false,
+		"DefaultValue": "1"
+	},
+	{
+		"Name": "steps",
+		"Description": "Steps, overrides epochs",
+		"Type": "Continuous",
+		"Range": {
+			"ContinuousParameterRangeSpecification": {
+				"MinValue": "0",
+				"MaxValue": "5000"
+			}
+		},
+		"IsTunable": false,
+		"IsRequired": false,
+		"DefaultValue": "0"
+	},
+	{
+		"DefaultValue": "mobilenet_v2_100_224-feature_vector-2",
+		"Description": "Base module to use for transfer learning",
+		"IsRequired": false,
+		"IsTunable": false,
+		"Name": "module",
+		"Range": {
+			"CategoricalParameterRangeSpecification": {
+				"Values": [
+					"mobilenet_v2_100_224-feature_vector-2"
+				]
+			}
+		},
+		"Type": "Categorical"
+	}
+]

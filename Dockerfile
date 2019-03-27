@@ -3,28 +3,31 @@ FROM nvidia/cuda:10.0-base-ubuntu16.04
 
 MAINTAINER Loren Kuich <loren@lkuich.com>
 
-ENV CUDNN_VERSION=7.4.1.5-1+cuda10.0
+ENV CUDNN_VERSION=7.3.1.20-1+cuda9.0
+ENV TF_TENSORRT_VERSION=4.1.2
 
 RUN apt-get update && apt-get install -y --no-install-recommends \
         ca-certificates \
-        cuda-command-line-tools-10-0 \
-        cuda-cublas-10-0 \
-        cuda-cufft-10-0 \
-        cuda-curand-10-0 \
-        cuda-cusolver-10-0 \
-        cuda-cusparse-10-0 \
+        cuda-command-line-tools-9-0 \
+        cuda-cublas-9-0 \
+        cuda-cufft-9-0 \
+        cuda-curand-9-0 \
+        cuda-cusolver-9-0 \
+        cuda-cusparse-9-0 \
         libcudnn7=${CUDNN_VERSION} \
-        libcudnn7-dev=7.4.1.5-1+cuda10.0 \
+        libnccl2=${NCCL_VERSION} \
+        libgomp1 \
         python3 \
         python3-dev \
         python3-setuptools \
         python3-wheel \
         python3-pip \
         && \
-    apt-get update && \
-        apt-get install nvinfer-runtime-trt-repo-ubuntu1604-5.0.2-ga-cuda10.0 \
-        && apt-get update \
-        && apt-get install -y --no-install-recommends libnvinfer-dev=5.0.2-1+cuda10.0 && \
+    apt-get update && apt-get install -y --no-install-recommends \
+        nvinfer-runtime-trt-repo-ubuntu1604-4.0.1-ga-cuda9.0 && \
+    apt-get update && apt-get install -y --no-install-recommends \
+        libnvinfer4=${TF_TENSORRT_VERSION}-1+cuda9.0 && \
+    apt-get clean && \
     rm -rf /var/lib/apt/lists/* && \
     rm /usr/lib/x86_64-linux-gnu/libnvinfer_plugin* && \
     rm /usr/lib/x86_64-linux-gnu/libnvcaffe_parser* && \

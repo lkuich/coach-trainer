@@ -1,0 +1,33 @@
+{
+	"TrainingInputMode": "File",
+	"HyperParameters": {
+		"steps": "1"
+	},
+	"InputDataConfig": [
+		{
+			"ChannelName": "train",
+			"DataSource": {
+				"S3DataSource": {
+					"S3DataType": "S3Prefix",
+					"S3Uri": "s3://sagemaker-east/flower_photos",
+					"S3DataDistributionType": "FullyReplicated"
+				}
+			},
+			"ContentType": "application/json",
+			"CompressionType": "None",
+			"RecordWrapperType": "None"
+		}
+	],
+	"OutputDataConfig": {
+		"KmsKeyId": "",
+		"S3OutputPath": "s3://sagemaker-east/trained"
+	},
+	"ResourceConfig": {
+		"InstanceType": "ml.m5.large",
+		"InstanceCount": 1,
+		"VolumeSizeInGB": 10
+	},
+	"StoppingCondition": {
+		"MaxRuntimeInSeconds": 1800
+	}
+}
