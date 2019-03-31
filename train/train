@@ -8,16 +8,23 @@ import tensorflow.keras.backend as K
 
 from tensorflow.python.tools import optimize_for_inference_lib
 
+from tensorflow.python.saved_model import signature_constants
+from tensorflow.python.saved_model import signature_def_utils
+from tensorflow.python.saved_model import utils as saved_model_utils
+from tensorflow.python.saved_model import tag_constants
+from tensorflow.python.saved_model import builder as saved_model_builder
+
 import os
 import sys
 import json
 import csv
 import time
+import math
 
 __PROD__ = os.environ.get('LOCAL') != 'True'
 prefix = '/opt/ml/'
 
-if __name__ =='__main__':
+def main():
     if __PROD__:
         from environment import create_trainer_environment
         env = create_trainer_environment()
@@ -32,14 +39,14 @@ if __name__ =='__main__':
             break
         data_root = data_root + '/' + filename
     else:
-        epochs = 1
-        steps = 0
+        epochs = 0
+        steps = 1
         feature_extractor_url = "models/mobilenet_v2_100_224-feature_vector-2"
         data_root = tf.keras.utils.get_file(
             'flower_photos','https://storage.googleapis.com/download.tensorflow.org/example_images/flower_photos.tgz',
             untar=True)
     
-    output_dir = os.path.join(prefix, 'model')
+    output_dir = os.path.join(prefix, 'model', str(math.ceil(time.time())))
     print('output_dir: ' + output_dir)
 
     image_generator = tf.keras.preprocessing.image.ImageDataGenerator(rescale=1/255)
@@ -112,7 +119,7 @@ if __name__ =='__main__':
 
     tf_graph = sess.graph
 
-    frozen_graph = tf.compat.v1.graph_util.convert_variables_to_constants(
+    frozen_graph = tf.graph_util.convert_variables_to_constants(
         sess, tf_graph.as_graph_def(), output_nodes
     )
 
@@ -122,11 +129,52 @@ if __name__ =='__main__':
         output_nodes, # an array of output nodes
         tf.float32.as_datatype_enum)
     
-    print('Writing to: ' + output_dir)
-    
+    print('Writing to: ' + output_dir) 
     tf.train.write_graph(output_graph_def, output_dir, 'model.pb', as_text=False)
-    
+
+    # Keras for kicks
+    tf.contrib.saved_model.save_keras_model(model, os.path.join('keras', output_dir))
+
+    # Writing variables
+    signature = build_signature(model.input, model.output)
+    write_variables(sess, signature, signature, os.path.join(output_dir, 'variables')) 
+
     # Write labels to export_path
     with open(os.path.join(output_dir, 'labels.csv'), 'w') as file:
         file.write(label_txt)
     file.close()
+
+def build_signature(inputs, outputs):
+  """Build the signature.
+  Not using predic_signature_def in saved_model because it is replacing the
+  tensor name, b/35900497.
+  Args:
+    inputs: a dictionary of tensor name to tensor
+    outputs: a dictionary of tensor name to tensor
+  Returns:
+    The signature, a SignatureDef proto.
+  """
+  signature_inputs = {"import/lambda_input_input": saved_model_utils.build_tensor_info(inputs) }
+  signature_outputs = {"import/softmax_input/Softmax": saved_model_utils.build_tensor_info(outputs) }
+
+  signature_def = signature_def_utils.build_signature_def(
+      signature_inputs, signature_outputs,
+      signature_constants.PREDICT_METHOD_NAME)
+
+  return signature_def
+
+def write_variables(sess, prediction_signature, classification_signature, path):
+    builder = tf.saved_model.builder.SavedModelBuilder(path)
+    builder.add_meta_graph_and_variables(
+      sess, [tf.saved_model.tag_constants.SERVING],
+      signature_def_map={
+        'predict_images':
+            prediction_signature,
+        signature_constants.DEFAULT_SERVING_SIGNATURE_DEF_KEY:
+            classification_signature,
+    },
+    main_op=tf.tables_initializer())
+    builder.save()
+
+if __name__ =='__main__':
+    main()
