@@ -27,13 +27,17 @@ if __name__ =='__main__':
         feature_extractor_url = os.path.join('models', env.hyperparameters.get('module', default="mobilenet_v2_100_224-feature_vector-2", object_type=str))
         data_root = env.channel_dirs['train']
         files = os.listdir(data_root)
+        print(str(files))
+        
         for name in files:
-            filename = name
+            dirname = name
             break
-        data_root = data_root + '/' + filename
+        data_root = data_root + '/' + dirname
+        print('dirname: ' + dirname)
+        print('data_root: ' + data_root)
     else:
-        epochs = 1
-        steps = 0
+        epochs = 0
+        steps = 1
         feature_extractor_url = "models/mobilenet_v2_100_224-feature_vector-2"
         data_root = tf.keras.utils.get_file(
             'flower_photos','https://storage.googleapis.com/download.tensorflow.org/example_images/flower_photos.tgz',
@@ -112,7 +116,7 @@ if __name__ =='__main__':
 
     tf_graph = sess.graph
 
-    frozen_graph = tf.compat.v1.graph_util.convert_variables_to_constants(
+    frozen_graph = tf.graph_util.convert_variables_to_constants(
         sess, tf_graph.as_graph_def(), output_nodes
     )
 

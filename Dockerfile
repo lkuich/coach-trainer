@@ -3,6 +3,7 @@ FROM nvidia/cuda:9.0-base-ubuntu16.04
 
 MAINTAINER Loren Kuich <loren@lkuich.com>
 
+ENV NCCL_VERSION=2.3.5-2+cuda9.0
 ENV CUDNN_VERSION=7.3.1.20-1+cuda9.0
 ENV TF_TENSORRT_VERSION=4.1.2
 
@@ -38,7 +39,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 # linking them together. Likewise, pip leaves the install caches populated which uses
 # a significant amount of space. These optimizations save a fair amount of space in the
 # image, which reduces start up time.
-RUN pip3 install tensorflow-gpu tensorflow-hub pillow scipy && rm -rf /root/.cache
+RUN pip3 install tensorflow-gpu==1.12 tensorflow-hub pillow scipy && rm -rf /root/.cache
 
 # Set some environment variables. PYTHONUNBUFFERED keeps Python from buffering our standard
 # output stream, which means that logs can be delivered to the user quickly. PYTHONDONTWRITEBYTECODE
