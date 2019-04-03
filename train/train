@@ -8,12 +8,6 @@ import tensorflow.keras.backend as K
 
 from tensorflow.python.tools import optimize_for_inference_lib
 
-from tensorflow.python.saved_model import signature_constants
-from tensorflow.python.saved_model import signature_def_utils
-from tensorflow.python.saved_model import utils as saved_model_utils
-from tensorflow.python.saved_model import tag_constants
-from tensorflow.python.saved_model import builder as saved_model_builder
-
 import os
 import sys
 import json
@@ -140,7 +134,7 @@ def main():
         tf.float32.as_datatype_enum)
     
     #print('Writing to: ' + output_dir) 
-    tf.train.write_graph(output_graph_def, output_dir, 'saved_model.pb', as_text=False)
+    tf.train.write_graph(output_graph_def, output_dir, 'frozen.pb', as_text=False)
     write_tf_lite_sess(sess, output_dir, model.input, model.output)
     #write_tf_lite(output_dir, input_nodes, output_nodes, input_shape) 
     
