@@ -13,11 +13,12 @@ import sys
 import json
 import csv
 import time
+import math
 
 __PROD__ = os.environ.get('LOCAL') != 'True'
 prefix = '/opt/ml/'
 
-if __name__ =='__main__':
+def main():
     if __PROD__:
         from environment import create_trainer_environment
         env = create_trainer_environment()
@@ -42,8 +43,9 @@ if __name__ =='__main__':
         data_root = tf.keras.utils.get_file(
             'flower_photos','https://storage.googleapis.com/download.tensorflow.org/example_images/flower_photos.tgz',
             untar=True)
-    
-    output_dir = os.path.join(prefix, 'model')
+
+    output_dir_root = os.path.join(prefix, 'model')
+    output_dir = os.path.join(output_dir_root, str(math.ceil(time.time())))
     print('output_dir: ' + output_dir)
 
     image_generator = tf.keras.preprocessing.image.ImageDataGenerator(rescale=1/255)
@@ -60,7 +62,9 @@ if __name__ =='__main__':
         print("Label batch shape: ", label_batch.shape)
         break
 
-    features_extractor_layer = layers.Lambda(feature_extractor, input_shape=IMAGE_SIZE+[3], name="lambda_input")
+    input_shape = IMAGE_SIZE+[3]
+
+    features_extractor_layer = layers.Lambda(feature_extractor, input_shape=input_shape, name="lambda_input")
     features_extractor_layer.trainable = False
 
     model = tf.keras.Sequential([
@@ -77,9 +81,16 @@ if __name__ =='__main__':
     output_nodes = [node.op.name for node in model.outputs]
     print(output_nodes)
 
+    label_names = sorted(image_data.class_indices.items(), key=lambda pair:pair[1])
+    label_names = [key.title() for key, value in label_names]
+    
+    #labels = tf.Variable(label_names, trainable=False, name='labels')
+    #labels = tf.Variable(label_names, tf.string)
+
     init = tf.global_variables_initializer()
     sess = K.get_session()
     sess.run(init)
+    #sess.run(labels)
 
     model.compile(
         optimizer=tf.train.AdamOptimizer(),
@@ -109,7 +120,7 @@ if __name__ =='__main__':
 
     label_names = sorted(image_data.class_indices.items(), key=lambda pair:pair[1])
     label_names = [key.title() for key, value in label_names]
-
+    
     label_txt = ''
     for l in label_names:
         label_txt += l + '\n'
@@ -126,11 +137,36 @@ if __name__ =='__main__':
         output_nodes, # an array of output nodes
         tf.float32.as_datatype_enum)
     
-    print('Writing to: ' + output_dir)
+    #print('Writing to: ' + output_dir) 
+    tf.train.write_graph(output_graph_def, output_dir, 'frozen.pb', as_text=False)
+    write_tf_lite_sess(sess, output_dir, model.input, model.output)
+    #write_tf_lite(output_dir, input_nodes, output_nodes, input_shape) 
     
-    tf.train.write_graph(output_graph_def, output_dir, 'model.pb', as_text=False)
-    
+    # SavedModel for serving
+    kdir = tf.contrib.saved_model.save_keras_model(model, output_dir)
+
+    # Writing variables
+    #signature = build_signature(model.input, model.output)
+    #write_variables(sess, signature, signature, os.path.join(output_dir, 'variables')) 
+
     # Write labels to export_path
     with open(os.path.join(output_dir, 'labels.csv'), 'w') as file:
         file.write(label_txt)
     file.close()
+
+def write_tf_lite(path, input, output, input_shape):
+    #tf.enable_eager_execution()
+    #converter = tf.lite.TFLiteConverter.from_session(frozen, input, output)
+    converter = tf.lite.TFLiteConverter.from_frozen_graph(os.path.join(path, 'saved_model.pb'), input, output, {input[0]: input_shape})
+
+    tflite_model = converter.convert()
+    open(os.path.join(path, "mobile.tflite"), "wb").write(tflite_model)
+
+def write_tf_lite_sess(sess, path, input, output):
+    converter = tf.lite.TFLiteConverter.from_session(sess, [input], [output])
+    
+    tflite_model = converter.convert()
+    open(os.path.join(path, "mobile.tflite"), "wb").write(tflite_model)
+
+if __name__ =='__main__':
+    main()

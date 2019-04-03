@@ -63,7 +63,7 @@ def main():
 
   prefix = '/opt/ml/model/' + args.model + '/'
 
-  graph = load_graph(os.path.join(prefix, 'model.pb'))
+  graph = load_graph(os.path.join(prefix, 'saved_model.pb'))
   labels = load_labels(os.path.join(prefix, 'labels.csv'))  
 
   output_name = "import/softmax_input/Softmax"
@@ -79,6 +79,7 @@ def main():
     results = sess.run(output_operation.outputs[0], {
         input_operation.outputs[0]: t
     })
+  print(results)
   results = np.squeeze(results)
 
   top_k = results.argsort()[-5:][::-1]
