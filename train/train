@@ -49,7 +49,19 @@ def main():
     print('output_dir: ' + output_dir)
 
     image_generator = tf.keras.preprocessing.image.ImageDataGenerator(rescale=1/255)
-
+    '''
+    with graph.as_default(): 
+        input_bytes = tf.reshape(input_bytes, [])
+    
+        # Transform bitstring to uint8 tensor
+        input_tensor = tf.image.decode_png(input_bytes, channels=3)
+    
+        # Convert to float32 tensor
+        input_tensor = tf.image.convert_image_dtype(input_tensor,  dtype=tf.float32)
+    
+        # Ensure tensor has correct shape
+    	input_tensor = tf.reshape(input_tensor, [64, 64, 3])
+    '''
     def feature_extractor(x):
         feature_extractor_module = hub.Module(feature_extractor_url)
         return feature_extractor_module(x)
@@ -66,6 +78,18 @@ def main():
 
     features_extractor_layer = layers.Lambda(feature_extractor, input_shape=input_shape, name="lambda_input")
     features_extractor_layer.trainable = False
+
+    #serving_input = tf.keras.layers.Input(shape=input_shape, name="base_image", dtype=tf.string)
+    
+    def b():
+        serving = tf.placeholder(shape=input_shape, dtype=tf.string, name='input_bytes')
+        decoded_tensor = tf.decode_base64(serving)
+    
+    def preprocess_and_decode(img_str, new_shape=input_shape):
+        img = tf.io.decode_base64(img_str)
+        img = tf.image.decode_jpeg(img, channels=3)
+        img = tf.image.resize_images(img, new_shape, method=tf.image.ResizeMethod.BILINEAR, align_corners=False)
+        return img
 
     model = tf.keras.Sequential([
         features_extractor_layer,
