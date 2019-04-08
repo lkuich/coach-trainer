@@ -52,4 +52,5 @@ ENV PATH="/opt/program:${PATH}"
 
 # Set up the program in the image
 COPY train /opt/program
+COPY inference /opt/program
 WORKDIR /opt/program
