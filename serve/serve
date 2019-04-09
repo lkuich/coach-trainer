@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 from flask import Flask, request
 import tensorflow as tf
+from predict import predict
 
 app = Flask(__name__)
 
@@ -9,7 +10,7 @@ def invocations():
   if request.method == "POST":
     js = request.get_json()
     img = tf.io.decode_base64(js['b64'])
-    return str(img)
+    return str(predict(img))
 
 @app.route('/ping', methods=['POST'])
 def ping():

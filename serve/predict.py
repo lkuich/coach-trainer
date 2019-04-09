@@ -5,7 +5,6 @@ from tensorflow.keras.preprocessing import image
 import os
 import csv
 import numpy as np
-import argparse
 
 def load_graph(model_file):
   graph = tf.Graph()
@@ -49,19 +48,23 @@ def read_tensor_from_image_file(file_name, input_height=224, input_width=224, in
 
   return result
 
+'''
 def get_input_args():
   parser = argparse.ArgumentParser()
   parser.add_argument("--image", help="image to be processed")
   parser.add_argument("--model", help="model ID")
   return parser.parse_args()
+'''
 
-def main():
+def predict(t):
+  '''
   args = get_input_args()
-  if (args.image is None or args.model is None):
+  if (args.image is None):
     print("Need exactly 2 arguments")
     return
+  '''
 
-  prefix = '/opt/ml/model/' + args.model + '/'
+  prefix = '/opt/ml/model/'
 
   graph = load_graph(os.path.join(prefix, 'saved_model.pb'))
   labels = load_labels(os.path.join(prefix, 'labels.csv'))  
@@ -72,7 +75,8 @@ def main():
   input_operation = graph.get_operation_by_name(input_name)
   output_operation = graph.get_operation_by_name(output_name)
 
-  t = read_tensor_from_image_file(args.image)
+  #t = read_tensor_from_image_file(args.image)
+  ...
   
   with tf.Session(graph=graph) as sess:
     sess.run(tf.global_variables_initializer())
@@ -85,6 +89,4 @@ def main():
   top_k = results.argsort()[-5:][::-1]
   for i in top_k:
     print(labels[i], results[i])
-
-if __name__ == "__main__":
-  main()
+  return top_k
