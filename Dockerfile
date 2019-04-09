@@ -52,5 +52,7 @@ ENV PATH="/opt/program:${PATH}"
 
 # Set up the program in the image
 COPY train /opt/program
-COPY inference /opt/program
+COPY serve /opt/program
 WORKDIR /opt/program
+
+#ENTRYPOINT ["python", "cusotm_fn"]
