@@ -5,6 +5,7 @@ from tensorflow.keras.preprocessing import image
 import os
 import csv
 import numpy as np
+import json
 
 def load_graph(model_file):
   graph = tf.Graph()
@@ -103,7 +104,8 @@ def predict(base):
   input_operation = graph.get_operation_by_name(input_name)
   output_operation = graph.get_operation_by_name(output_name)
 
-  t = read_tensor_from_base(base)
+  t = read_tensor_from_image_file('/home/loren/ScaledTrainer/serve/rose.jpg')
+  #t = read_tensor_from_base(base)
   
   with tf.Session(graph=graph) as sess:
     sess.run(tf.global_variables_initializer())
@@ -113,7 +115,12 @@ def predict(base):
   print(results)
   results = np.squeeze(results)
 
+  response = { "results": [] }
   top_k = results.argsort()[-5:][::-1]
   for i in top_k:
+    response['results'].append({
+      "label": labels[i],
+      "result": str(results[i])
+    })
     print(labels[i], results[i])
-  return top_k
+  return json.dumps(response)
