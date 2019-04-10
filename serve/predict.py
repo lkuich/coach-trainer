@@ -84,7 +84,7 @@ def get_input_args():
   return parser.parse_args()
 '''
 
-def predict(t):
+def predict(base):
   '''
   args = get_input_args()
   if (args.image is None):
@@ -103,8 +103,7 @@ def predict(t):
   input_operation = graph.get_operation_by_name(input_name)
   output_operation = graph.get_operation_by_name(output_name)
 
-  #t = read_tensor_from_image_file(args.image)
-  ...
+  t = read_tensor_from_base(base)
   
   with tf.Session(graph=graph) as sess:
     sess.run(tf.global_variables_initializer())
