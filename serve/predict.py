@@ -104,8 +104,8 @@ def predict(base):
   input_operation = graph.get_operation_by_name(input_name)
   output_operation = graph.get_operation_by_name(output_name)
 
-  t = read_tensor_from_image_file('/home/loren/ScaledTrainer/serve/rose.jpg')
-  #t = read_tensor_from_base(base)
+  #t = read_tensor_from_image_file('/home/loren/ScaledTrainer/serve/rose.jpg')
+  t = read_tensor_from_base(base)
   
   with tf.Session(graph=graph) as sess:
     sess.run(tf.global_variables_initializer())
