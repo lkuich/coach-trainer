@@ -157,13 +157,13 @@ def main():
 def write_tf_lite(path, input, output, input_shape):
     #tf.enable_eager_execution()
     #converter = tf.lite.TFLiteConverter.from_session(frozen, input, output)
-    converter = tf.lite.TFLiteConverter.from_frozen_graph(os.path.join(path, 'saved_model.pb'), input, output, {input[0]: input_shape})
+    converter = tf.contrib.lite.TFLiteConverter.from_frozen_graph(os.path.join(path, 'saved_model.pb'), input, output, {input[0]: input_shape})
 
     tflite_model = converter.convert()
     open(os.path.join(path, "mobile.tflite"), "wb").write(tflite_model)
 
 def write_tf_lite_sess(sess, path, input, output):
-    converter = tf.lite.TFLiteConverter.from_session(sess, [input], [output])
+    converter = tf.contrib.lite.TFLiteConverter.from_session(sess, [input], [output])
     
     tflite_model = converter.convert()
     open(os.path.join(path, "mobile.tflite"), "wb").write(tflite_model)
