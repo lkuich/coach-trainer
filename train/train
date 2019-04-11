@@ -8,6 +8,8 @@ import tensorflow.keras.backend as K
 
 from tensorflow.python.tools import optimize_for_inference_lib
 
+from dynamo import update_status
+
 import os
 import sys
 import json
@@ -23,6 +25,7 @@ def main():
         from environment import create_trainer_environment
         env = create_trainer_environment()
         
+        accountId = env.hyperparameters.get('accountId', object_type=str)
         epochs = env.hyperparameters.get('epochs', default=1, object_type=int)
         steps = env.hyperparameters.get('steps', default=0, object_type=int)
         feature_extractor_url = os.path.join('models', env.hyperparameters.get('module', default="mobilenet_v2_100_224-feature_vector-2", object_type=str))
@@ -37,15 +40,24 @@ def main():
         print('dirname: ' + dirname)
         print('data_root: ' + data_root)
     else:
+        accountId = 'B1dp8'
         epochs = 0
         steps = 1
         feature_extractor_url = "models/mobilenet_v2_100_224-feature_vector-2"
+        dirname = 'flower_photos'
         data_root = tf.keras.utils.get_file(
-            'flower_photos','https://storage.googleapis.com/download.tensorflow.org/example_images/flower_photos.tgz',
+            dirname,'https://storage.googleapis.com/download.tensorflow.org/example_images/flower_photos.tgz',
             untar=True)
 
+    # Session created
+    try:
+        update_status(accountId, dirname, 1)
+    except ValueError as e:
+        print(e)
+        return
+
     output_dir_root = os.path.join(prefix, 'model')
-    output_dir = os.path.join(output_dir_root, str(math.ceil(time.time())))
+    output_dir = output_dir_root
     print('output_dir: ' + output_dir)
 
     image_generator = tf.keras.preprocessing.image.ImageDataGenerator(rescale=1/255)
@@ -113,6 +125,14 @@ def main():
     print('steps/epoch: ' + str(steps_per_epoch))
     print('steps: ' + str(steps_per_epoch * epochs))
     batch_stats = CollectBatchStats()
+    
+    # Set model status to 2, in-progress
+    try:
+        update_status(accountId, dirname, 2)
+    except ValueError as e:
+        print(e)
+        return
+
     model.fit((item for item in image_data), epochs=epochs,
                         steps_per_epoch=steps_per_epoch,
                         callbacks = [batch_stats],
@@ -153,6 +173,12 @@ def main():
     with open(os.path.join(output_dir, 'labels.csv'), 'w') as file:
         file.write(label_txt)
     file.close()
+
+    # Set model status to 3, complete    
+    try:
+        update_status(accountId, dirname, 3)
+    except ValueError as exp:
+        print(exp)
 
 def write_tf_lite(path, input, output, input_shape):
     #tf.enable_eager_execution()
