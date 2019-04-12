@@ -49,6 +49,7 @@ RUN pip3 install tensorflow-gpu==1.12 tensorflow-hub pillow scipy Flask boto3 &&
 ENV PYTHONUNBUFFERED=TRUE
 ENV PYTHONDONTWRITEBYTECODE=TRUE
 ENV PATH="/opt/program:${PATH}"
+ENV AWS_DEFAULT_REGION=us-east-1
 
 # Set up the program in the image
 COPY train /opt/program
