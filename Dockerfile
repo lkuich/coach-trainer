@@ -39,7 +39,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 # linking them together. Likewise, pip leaves the install caches populated which uses
 # a significant amount of space. These optimizations save a fair amount of space in the
 # image, which reduces start up time.
-RUN pip3 install tensorflow-gpu==1.12 tensorflow-hub pillow scipy Flask boto3 && rm -rf /root/.cache
+RUN pip3 install tensorflow-gpu==1.12 tensorflow-hub pillow scipy Flask boto3 gevent && rm -rf /root/.cache
 
 # Set some environment variables. PYTHONUNBUFFERED keeps Python from buffering our standard
 # output stream, which means that logs can be delivered to the user quickly. PYTHONDONTWRITEBYTECODE
@@ -49,7 +49,10 @@ RUN pip3 install tensorflow-gpu==1.12 tensorflow-hub pillow scipy Flask boto3 &&
 ENV PYTHONUNBUFFERED=TRUE
 ENV PYTHONDONTWRITEBYTECODE=TRUE
 ENV PATH="/opt/program:${PATH}"
+
 ENV AWS_DEFAULT_REGION=us-east-1
+ENV AWS_ACCESS_KEY_ID=AKIAJPFVC25QTVJHNVFQ
+ENV AWS_SECRET_ACCESS_KEY=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
 
 # Set up the program in the image
 COPY train /opt/program
