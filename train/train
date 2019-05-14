@@ -137,17 +137,17 @@ def main():
         output_nodes, # an array of output nodes
         tf.float32.as_datatype_enum)
     
-    #print('Writing to: ' + output_dir) 
+    # Frozen 
     tf.train.write_graph(output_graph_def, output_dir, 'frozen.pb', as_text=False)
+
+    # TFLite for mobile
     write_tf_lite_sess(sess, output_dir, model.input, model.output)
-    #write_tf_lite(output_dir, input_nodes, output_nodes, input_shape) 
     
+    # Browser model
+    convert_to_js(model.output)
+
     # SavedModel for serving
     kdir = tf.contrib.saved_model.save_keras_model(model, output_dir)
-
-    # Writing variables
-    #signature = build_signature(model.input, model.output)
-    #write_variables(sess, signature, signature, os.path.join(output_dir, 'variables')) 
 
     # Write labels to export_path
     with open(os.path.join(output_dir, 'labels.csv'), 'w') as file:
@@ -167,6 +167,11 @@ def write_tf_lite_sess(sess, path, input, output):
     
     tflite_model = converter.convert()
     open(os.path.join(path, "mobile.tflite"), "wb").write(tflite_model)
+
+def convert_to_js(output_node_names):
+    os.system('tensorflowjs_converter \
+        --input_format=tf_frozen_model \
+        --output_node_names=' + output_node_names + 'frozen.pb web_model')
 
 if __name__ =='__main__':
     main()
