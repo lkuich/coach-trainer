@@ -142,36 +142,30 @@ def main():
 
     # TFLite for mobile
     write_tf_lite_sess(sess, output_dir, model.input, model.output)
-    
-    # Browser model
-    convert_to_js(model.output)
-
+   
     # SavedModel for serving
-    kdir = tf.contrib.saved_model.save_keras_model(model, output_dir)
+    # kdir = tf.contrib.saved_model.save_keras_model(model, output_dir)
+
+    # Browser model
+    convert_to_js(output_dir, output_nodes)
 
     # Write labels to export_path
     with open(os.path.join(output_dir, 'labels.csv'), 'w') as file:
         file.write(label_txt)
     file.close()
 
-def write_tf_lite(path, input, output, input_shape):
-    #tf.enable_eager_execution()
-    #converter = tf.lite.TFLiteConverter.from_session(frozen, input, output)
-    converter = tf.lite.TFLiteConverter.from_frozen_graph(os.path.join(path, 'saved_model.pb'), input, output, {input[0]: input_shape})
-
-    tflite_model = converter.convert()
-    open(os.path.join(path, "mobile.tflite"), "wb").write(tflite_model)
-
 def write_tf_lite_sess(sess, path, input, output):
-    converter = tf.lite.TFLiteConverter.from_session(sess, [input], [output])
+    converter = tf.contrib.lite.TFLiteConverter.from_session(sess, [input], [output])
     
     tflite_model = converter.convert()
     open(os.path.join(path, "mobile.tflite"), "wb").write(tflite_model)
 
-def convert_to_js(output_node_names):
-    os.system('tensorflowjs_converter \
-        --input_format=tf_frozen_model \
-        --output_node_names=' + output_node_names + 'frozen.pb web_model')
+def convert_to_js(path, output_node_names):
+    inputModel = os.path.join(path, 'frozen.pb')
+    outputPath = os.path.join(path, 'js')
+    cmd = 'tensorflowjs_converter --input_format=tf_frozen_model --output_node_names=' + output_node_names[0] + ' ' + inputModel + ' ' + outputPath
+    print(cmd)
+    os.system(cmd)
 
 if __name__ =='__main__':
     main()
