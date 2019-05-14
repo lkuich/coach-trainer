@@ -37,6 +37,7 @@ def main():
         print('dirname: ' + dirname)
         print('data_root: ' + data_root)
     else:
+        print("Running locally")
         epochs = 0
         steps = 1
         feature_extractor_url = "models/mobilenet_v2_100_224-feature_vector-2"
@@ -141,10 +142,10 @@ def main():
     tf.train.write_graph(output_graph_def, output_dir, 'frozen.pb', as_text=False)
 
     # TFLite for mobile
-    write_tf_lite_sess(sess, output_dir, model.input, model.output)
+    # write_tf_lite_sess(sess, output_dir, model.input, model.output)
     
     # Browser model
-    convert_to_js(model.output)
+    convert_to_js(output_nodes)
 
     # SavedModel for serving
     kdir = tf.contrib.saved_model.save_keras_model(model, output_dir)
@@ -155,23 +156,22 @@ def main():
     file.close()
 
 def write_tf_lite(path, input, output, input_shape):
-    #tf.enable_eager_execution()
-    #converter = tf.lite.TFLiteConverter.from_session(frozen, input, output)
-    converter = tf.lite.TFLiteConverter.from_frozen_graph(os.path.join(path, 'saved_model.pb'), input, output, {input[0]: input_shape})
+    converter = tf.contrib.lite.TFLiteConverter.from_frozen_graph(os.path.join(path, 'saved_model.pb'), input, output, {input[0]: input_shape})
 
     tflite_model = converter.convert()
     open(os.path.join(path, "mobile.tflite"), "wb").write(tflite_model)
 
 def write_tf_lite_sess(sess, path, input, output):
-    converter = tf.lite.TFLiteConverter.from_session(sess, [input], [output])
+    converter = tf.contrib.lite.TFLiteConverter.from_session(sess, [input], [output])
     
     tflite_model = converter.convert()
     open(os.path.join(path, "mobile.tflite"), "wb").write(tflite_model)
 
 def convert_to_js(output_node_names):
+    print(output_node_names)
     os.system('tensorflowjs_converter \
         --input_format=tf_frozen_model \
-        --output_node_names=' + output_node_names + 'frozen.pb web_model')
+        --output_node_names=' + output_node_names[0] + 'frozen.pb web_model')
 
 if __name__ =='__main__':
     main()
