@@ -2,6 +2,7 @@
 
 import tensorflow as tf
 import tensorflow_hub as hub
+import tensorflowjs as tfjs
 
 from tensorflow.keras import layers
 import tensorflow.keras.backend as K
@@ -139,8 +140,8 @@ def main():
     # SavedModel for serving
     # kdir = tf.contrib.saved_model.save_keras_model(model, output_dir)
 
-    # Browser model
-    convert_to_js(output_dir, output_nodes)
+    # JS model
+    convert_to_js(model, output_dir)
 
     # Write labels to export_path
     with open(os.path.join(output_dir, 'labels.csv'), 'w') as file:
@@ -153,12 +154,8 @@ def write_tf_lite_sess(sess, path, input, output):
     tflite_model = converter.convert()
     open(os.path.join(path, "mobile.tflite"), "wb").write(tflite_model)
 
-def convert_to_js(path, output_node_names):
-    inputModel = os.path.join(path, 'frozen.pb')
-    outputPath = os.path.join(path, 'js')
-    cmd = 'tensorflowjs_converter --input_format=tf_frozen_model --output_node_names=' + output_node_names[0] + ' ' + inputModel + ' ' + outputPath
-    print(cmd)
-    os.system(cmd)
+def convert_to_js(model, path):
+    tfjs.converters.save_keras_model(model, tfjs_target_dir)
 
 if __name__ =='__main__':
     main()
