@@ -40,11 +40,7 @@ def main():
 
         epochs = 0
         steps = 1
-<<<<<<< HEAD
-        feature_extractor_url = "models/inception_v3"
-=======
         feature_extractor_url = "models/" + sys.argv[1]
->>>>>>> a73f13a99445d70849cd8ed4e6e1ccb9829f1721
         data_root = tf.keras.utils.get_file(
             'flower_photos','https://storage.googleapis.com/download.tensorflow.org/example_images/flower_photos.tgz',
             untar=True)
@@ -52,7 +48,6 @@ def main():
     output_dir = os.path.join(prefix, 'model')
     print('output_dir: ' + output_dir)
 
-<<<<<<< HEAD
     retrain.FLAGS = {
         image_dir: str(data_root),
         output_graph: os.path.join(output_dir, 'frozen.pb'),
@@ -81,128 +76,6 @@ def main():
         checkpoint_path: '/tmp/_retrain_checkpoint'
     }
     retrain.run()
-=======
-    hub_module = hub.Module(feature_extractor_url)
-    IMAGE_SIZE = hub.get_expected_image_size(hub_module)
-
-    image_generator = tf.keras.preprocessing.image.ImageDataGenerator(rescale=1/255)
-
-    def feature_extractor(x):
-        return hub_module(x)
-
-    image_data = image_generator.flow_from_directory(str(data_root), target_size=IMAGE_SIZE)
-    for image_batch,label_batch in image_data:
-        print("Image batch shape: ", image_batch.shape)
-        print("Label batch shape: ", label_batch.shape)
-        break
-
-    input_shape = IMAGE_SIZE+[3]
-
-    features_extractor_layer = layers.Lambda(feature_extractor, input_shape=input_shape, name="lambda")
-    features_extractor_layer.trainable = False
-
-    model = tf.keras.Sequential([
-        features_extractor_layer,
-        layers.Dense(image_data.num_classes, activation='softmax', name='output')
-    ])
-    model.summary()
-    
-    print('--- INPUT NODES ---')
-    input_nodes = [node.op.name for node in model.inputs]
-    print(input_nodes)
-    
-    print('--- OUTPUT NODES ---')
-    output_nodes = [node.op.name for node in model.outputs]
-    print(output_nodes)
-
-    label_names = sorted(image_data.class_indices.items(), key=lambda pair:pair[1])
-    label_names = [key.title() for key, value in label_names]
-    
-    #labels = tf.Variable(label_names, trainable=False, name='labels')
-    #labels = tf.Variable(label_names, tf.string)
-
-    init = tf.global_variables_initializer()
-    sess = K.get_session()
-    sess.run(init)
-    #sess.run(labels)
-
-    model.compile(
-        optimizer=tf.train.AdamOptimizer(),
-        loss='categorical_crossentropy',
-        metrics=['accuracy'])
-
-    class CollectBatchStats(tf.keras.callbacks.Callback):
-        def __init__(self):
-            self.batch_losses = []
-            self.batch_acc = []
-
-        def on_batch_end(self, batch, logs=None):
-            self.batch_losses.append(logs['loss'])
-            self.batch_acc.append(logs['acc'])
-
-    steps_per_epoch = image_data.samples//image_data.batch_size
-    if steps > 0:
-        steps_per_epoch = steps
-
-    print('steps/epoch: ' + str(steps_per_epoch))
-    print('steps: ' + str(steps_per_epoch * epochs))
-    batch_stats = CollectBatchStats()
-    model.fit((item for item in image_data), epochs=epochs,
-                        steps_per_epoch=steps_per_epoch,
-                        callbacks = [batch_stats],
-                        validation_split=int(image_data.samples*0.1))
-
-    label_names = sorted(image_data.class_indices.items(), key=lambda pair:pair[1])
-    label_names = [key.title() for key, value in label_names]
-    
-    label_txt = ''
-    for l in label_names:
-        label_txt += l + '\n'
-
-    tf_graph = sess.graph
-
-    frozen_graph = tf.graph_util.convert_variables_to_constants(
-        sess, tf_graph.as_graph_def(), output_nodes
-    )
-
-    output_graph_def = optimize_for_inference_lib.optimize_for_inference(
-        frozen_graph,
-        input_nodes, # an array of the input node(s)
-        output_nodes, # an array of output nodes
-        tf.float32.as_datatype_enum)
-    
-    # Frozen 
-    tf.train.write_graph(output_graph_def, output_dir, 'frozen.pb', as_text=False)
-
-    # TFLite for mobile
-    write_tf_lite_sess(sess, output_dir, model.input, model.output)
-   
-    # SavedModel for serving/retraining
-    # kdir = tf.contrib.saved_model.save_keras_model(model, output_dir)
-
-    # JS model
-    # convert_to_js(model, os.path.join(output_dir, 'js'))
-
-    with open(os.path.join(output_dir, 'tf_version'), 'w') as tfv_file:
-        tfv_file.write(str(tf.__version__))
-    tfv_file.close()
-
-    # Write labels to export_path
-    with open(os.path.join(output_dir, 'labels'), 'w') as file:
-        file.write(label_txt)
-    file.close()
-
-def write_tf_lite_sess(sess, path, input, output):
-    converter = tf.contrib.lite.TFLiteConverter.from_session(sess, [input], [output])
-    
-    tflite_model = converter.convert()
-    open(os.path.join(path, "mobile.tflite"), "wb").write(tflite_model)
-
-'''
-def convert_to_js(model, path):
-    tfjs.converters.save_keras_model(model, path)
-'''
->>>>>>> a73f13a99445d70849cd8ed4e6e1ccb9829f1721
 
 if __name__ =='__main__':
     main()
