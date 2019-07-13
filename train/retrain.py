@@ -203,7 +203,7 @@ def create_module_graph(module_spec):
   """
   height, width = hub.get_expected_image_size(module_spec)
   with tf.Graph().as_default() as graph:
-    resized_input_tensor = tf.placeholder(tf.float32, [None, height, width, 3], name="input")
+    resized_input_tensor = tf.placeholder(tf.float32, [None, height, width, 3], name=FLAGS.input_tensor_name)
     m = hub.Module(module_spec)
     bottleneck_tensor = m(resized_input_tensor)
     wants_quantization = any(node.op in FAKE_QUANT_OPS
@@ -860,7 +860,7 @@ def export_model(module_spec, class_count, saved_model_dir):
         sess,
         saved_model_dir,
         inputs={'image': in_image},
-        outputs={'prediction': graph.get_tensor_by_name('final_result:0')},
+        outputs={'prediction': graph.get_tensor_by_name(FLAGS.final_tensor_name + ':0')},
         legacy_init_op=tf.group(tf.tables_initializer(), name='legacy_init_op')
     )
 
@@ -919,6 +919,7 @@ def run():
       FLAGS.random_brightness)
 
   # Set up the pre-trained graph.
+  print(FLAGS.tfhub_module)
   module_spec = hub.load_module_spec(FLAGS.tfhub_module)
   graph, bottleneck_tensor, resized_image_tensor, wants_quantization = (
       create_module_graph(module_spec))
@@ -1060,13 +1061,17 @@ def run():
     if FLAGS.saved_model_dir:
       export_model(module_spec, class_count, FLAGS.saved_model_dir)
 
-    '''
     if FLAGS.tf_lite:
-      write_tf_lite_sess(sess, '', )
-    '''
+      write_tf_lite(FLAGS.tf_lite)
 
-def write_tf_lite_sess(sess, path, input, output):
-    converter = tf.contrib.lite.TFLiteConverter.from_session(sess, [input], [output])
-    
+    if FLAGS.tfjs:
+      write_to_js(FLAGS.tfjs)
+
+def write_tf_lite(path):
+    converter = tf.contrib.lite.TFLiteConverter.from_saved_model(FLAGS.saved_model_dir)
     tflite_model = converter.convert()
-    open(os.path.join(path, "mobile.tflite"), "wb").write(tflite_model)
+    open(path, "wb").write(tflite_model)
+
+def write_to_js(path):
+    import tensorflowjs as tfjs
+    tfjs.converters.convert_tf_saved_model(FLAGS.saved_model_dir, FLAGS.final_tensor_name, path)

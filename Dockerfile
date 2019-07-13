@@ -40,7 +40,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 # a significant amount of space. These optimizations save a fair amount of space in the
 # image, which reduces start up time.
 # tensorflowjs==0.8.0
-RUN pip3 install tensorflow-gpu==1.12 tensorflow-hub pillow scipy && rm -rf /root/.cache
+RUN pip3 install tensorflow-gpu==1.12 tensorflowjs==0.8.0 tensorflow-hub pillow scipy && rm -rf /root/.cache
 
 # Set some environment variables. PYTHONUNBUFFERED keeps Python from buffering our standard
 # output stream, which means that logs can be delivered to the user quickly. PYTHONDONTWRITEBYTECODE
