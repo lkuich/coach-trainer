@@ -41,13 +41,13 @@ def main():
     output_dir = os.path.join(prefix, 'model')
     print('output_dir: ' + output_dir)
 
-    IMAGE_SIZE = hub.get_expected_image_size(hub.Module(feature_extractor_url))
+    hub_module = hub.Module(feature_extractor_url)
+    IMAGE_SIZE = hub.get_expected_image_size(hub_module)
 
-    image_generator = tf.keras.preprocessing.image.ImageDataGenerator() #rescale=1/255)
+    image_generator = tf.keras.preprocessing.image.ImageDataGenerator(rescale=1/255)
 
     def feature_extractor(x):
-        feature_extractor_module = hub.Module(feature_extractor_url)
-        return feature_extractor_module(x)
+        return hub_module(x)
 
     image_data = image_generator.flow_from_directory(str(data_root), target_size=IMAGE_SIZE)
     for image_batch,label_batch in image_data:
@@ -57,7 +57,7 @@ def main():
 
     input_shape = IMAGE_SIZE+[3]
 
-    features_extractor_layer = layers.Lambda(feature_extractor, input_shape=input_shape, name="")
+    features_extractor_layer = layers.Lambda(feature_extractor, input_shape=input_shape, name="input")
     features_extractor_layer.trainable = False
 
     model = tf.keras.Sequential([
