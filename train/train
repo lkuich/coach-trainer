@@ -2,7 +2,7 @@
 
 import tensorflow as tf
 import tensorflow_hub as hub
-import tensorflowjs as tfjs
+# import tensorflowjs as tfjs
 
 from tensorflow.keras import layers
 import tensorflow.keras.backend as K
@@ -57,7 +57,7 @@ def main():
 
     input_shape = IMAGE_SIZE+[3]
 
-    features_extractor_layer = layers.Lambda(feature_extractor, input_shape=input_shape, name="input")
+    features_extractor_layer = layers.Lambda(feature_extractor, input_shape=input_shape, name="")
     features_extractor_layer.trainable = False
 
     model = tf.keras.Sequential([
@@ -142,6 +142,10 @@ def main():
     # JS model
     # convert_to_js(model, os.path.join(output_dir, 'js'))
 
+    with open(os.path.join(output_dir, 'tf_version'), 'w') as tfv_file:
+        tfv_file.write(str(tf.__version__))
+    tfv_file.close()
+
     # Write labels to export_path
     with open(os.path.join(output_dir, 'labels.csv'), 'w') as file:
         file.write(label_txt)
@@ -153,8 +157,10 @@ def write_tf_lite_sess(sess, path, input, output):
     tflite_model = converter.convert()
     open(os.path.join(path, "mobile.tflite"), "wb").write(tflite_model)
 
+'''
 def convert_to_js(model, path):
     tfjs.converters.save_keras_model(model, path)
+'''
 
 if __name__ =='__main__':
     main()
