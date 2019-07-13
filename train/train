@@ -21,6 +21,8 @@ prefix = '/opt/ml/'
 
 def main():
     if __PROD__:
+        print("Running in production")
+
         from environment import create_trainer_environment
         env = create_trainer_environment()
         
@@ -31,6 +33,8 @@ def main():
         
         print('data_root: ' + data_root)
     else:
+        print('Running locally')
+
         epochs = 0
         steps = 1
         feature_extractor_url = "models/mobilenet_v2_100_224"
@@ -147,7 +151,7 @@ def main():
     tfv_file.close()
 
     # Write labels to export_path
-    with open(os.path.join(output_dir, 'labels.csv'), 'w') as file:
+    with open(os.path.join(output_dir, 'labels'), 'w') as file:
         file.write(label_txt)
     file.close()
 
