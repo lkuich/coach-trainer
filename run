@@ -1,0 +1,16 @@
+#!/bin/bash
+
+DOCKER_COMPOSE_LOCATION=compose.yaml
+PROJECT_NAME=coach-trainer
+
+if [ "$1" == "app" ]; then
+  echo 'Entering '"$PROJECT_NAME"' shell'
+  docker-compose -p $PROJECT_NAME -f $DOCKER_COMPOSE_LOCATION run app /bin/bash 
+  exit 0
+fi
+
+if [ "$1" == "build" ]; then
+  echo '(re)building '"$PROJECT_NAME"''
+  docker-compose -p $PROJECT_NAME -f $DOCKER_COMPOSE_LOCATION build app
+  exit 0
+fi

@@ -2,7 +2,7 @@
 
 import tensorflow as tf
 import tensorflow_hub as hub
-import tensorflowjs as tfjs
+# import tensorflowjs as tfjs
 
 from tensorflow.keras import layers
 import tensorflow.keras.backend as K
@@ -21,19 +21,24 @@ prefix = '/opt/ml/'
 
 def main():
     if __PROD__:
+        print("Running in production")
+
         from environment import create_trainer_environment
         env = create_trainer_environment()
         
         epochs = env.hyperparameters.get('epochs', default=1, object_type=int)
         steps = env.hyperparameters.get('steps', default=0, object_type=int)
-        feature_extractor_url = os.path.join('models', env.hyperparameters.get('module', default="mobilenet_v2_100_224-feature_vector-2", object_type=str))
+        feature_extractor_url = os.path.join('models', env.hyperparameters.get('module', default="mobilenet_v2_100_224", object_type=str))
         data_root = env.channel_dirs['train']
         
         print('data_root: ' + data_root)
     else:
+        import sys
+        print('Running locally')
+
         epochs = 0
         steps = 1
-        feature_extractor_url = "models/mobilenet_v2_100_224-feature_vector-2"
+        feature_extractor_url = "models/" + sys.argv[1]
         data_root = tf.keras.utils.get_file(
             'flower_photos','https://storage.googleapis.com/download.tensorflow.org/example_images/flower_photos.tgz',
             untar=True)
@@ -41,13 +46,13 @@ def main():
     output_dir = os.path.join(prefix, 'model')
     print('output_dir: ' + output_dir)
 
+    hub_module = hub.Module(feature_extractor_url)
+    IMAGE_SIZE = hub.get_expected_image_size(hub_module)
+
     image_generator = tf.keras.preprocessing.image.ImageDataGenerator(rescale=1/255)
 
     def feature_extractor(x):
-        feature_extractor_module = hub.Module(feature_extractor_url)
-        return feature_extractor_module(x)
-
-    IMAGE_SIZE = hub.get_expected_image_size(hub.Module(feature_extractor_url))
+        return hub_module(x)
 
     image_data = image_generator.flow_from_directory(str(data_root), target_size=IMAGE_SIZE)
     for image_batch,label_batch in image_data:
@@ -57,12 +62,12 @@ def main():
 
     input_shape = IMAGE_SIZE+[3]
 
-    features_extractor_layer = layers.Lambda(feature_extractor, input_shape=input_shape, name="lambda_input")
+    features_extractor_layer = layers.Lambda(feature_extractor, input_shape=input_shape, name="lambda")
     features_extractor_layer.trainable = False
 
     model = tf.keras.Sequential([
         features_extractor_layer,
-        layers.Dense(image_data.num_classes, activation='softmax', name='softmax_input')
+        layers.Dense(image_data.num_classes, activation='softmax', name='output')
     ])
     model.summary()
     
@@ -136,14 +141,18 @@ def main():
     # TFLite for mobile
     write_tf_lite_sess(sess, output_dir, model.input, model.output)
    
-    # SavedModel for serving
+    # SavedModel for serving/retraining
     # kdir = tf.contrib.saved_model.save_keras_model(model, output_dir)
 
     # JS model
-    convert_to_js(model, os.path.join(output_dir, 'js'))
+    # convert_to_js(model, os.path.join(output_dir, 'js'))
+
+    with open(os.path.join(output_dir, 'tf_version'), 'w') as tfv_file:
+        tfv_file.write(str(tf.__version__))
+    tfv_file.close()
 
     # Write labels to export_path
-    with open(os.path.join(output_dir, 'labels.csv'), 'w') as file:
+    with open(os.path.join(output_dir, 'labels'), 'w') as file:
         file.write(label_txt)
     file.close()
 
@@ -153,8 +162,10 @@ def write_tf_lite_sess(sess, path, input, output):
     tflite_model = converter.convert()
     open(os.path.join(path, "mobile.tflite"), "wb").write(tflite_model)
 
+'''
 def convert_to_js(model, path):
     tfjs.converters.save_keras_model(model, path)
+'''
 
 if __name__ =='__main__':
     main()
