@@ -61,7 +61,7 @@ def main():
 
     input_shape = IMAGE_SIZE+[3]
 
-    features_extractor_layer = layers.Lambda(feature_extractor, input_shape=input_shape, name="")
+    features_extractor_layer = layers.Lambda(feature_extractor, input_shape=input_shape, name="input")
     features_extractor_layer.trainable = False
 
     model = tf.keras.Sequential([
