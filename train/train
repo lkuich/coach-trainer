@@ -33,11 +33,12 @@ def main():
         
         print('data_root: ' + data_root)
     else:
+        import sys
         print('Running locally')
 
         epochs = 0
         steps = 1
-        feature_extractor_url = "models/mobilenet_v2_100_224"
+        feature_extractor_url = "models/" + sys.argv[1]
         data_root = tf.keras.utils.get_file(
             'flower_photos','https://storage.googleapis.com/download.tensorflow.org/example_images/flower_photos.tgz',
             untar=True)
@@ -61,7 +62,7 @@ def main():
 
     input_shape = IMAGE_SIZE+[3]
 
-    features_extractor_layer = layers.Lambda(feature_extractor, input_shape=input_shape, name="input")
+    features_extractor_layer = layers.Lambda(feature_extractor, input_shape=input_shape, name="lambda")
     features_extractor_layer.trainable = False
 
     model = tf.keras.Sequential([
@@ -141,7 +142,7 @@ def main():
     write_tf_lite_sess(sess, output_dir, model.input, model.output)
    
     # SavedModel for serving/retraining
-    kdir = tf.contrib.saved_model.save_keras_model(model, output_dir)
+    # kdir = tf.contrib.saved_model.save_keras_model(model, output_dir)
 
     # JS model
     # convert_to_js(model, os.path.join(output_dir, 'js'))
