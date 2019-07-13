@@ -140,8 +140,8 @@ def main():
     # TFLite for mobile
     write_tf_lite_sess(sess, output_dir, model.input, model.output)
    
-    # SavedModel for serving
-    # kdir = tf.contrib.saved_model.save_keras_model(model, output_dir)
+    # SavedModel for serving/retraining
+    kdir = tf.contrib.saved_model.save_keras_model(model, output_dir)
 
     # JS model
     # convert_to_js(model, os.path.join(output_dir, 'js'))
