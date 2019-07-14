@@ -15,6 +15,7 @@ import math
 import retrain
 import flags
 
+COACH_VERSION=1
 __PROD__ = os.environ.get('LOCAL') != 'True'
 prefix = '/opt/ml/'
 
@@ -85,9 +86,9 @@ def main():
     retrain.run()
 
     # Write our TF Version
-    with open(os.path.join(output_dir, 'tf_version'), 'w') as tfv_file:
-        tfv_file.write(str(tf.__version__))
-    tfv_file.close()
+    with open(os.path.join(output_dir, 'coach_version'), 'w') as coach_file:
+        coach_file.write(str(COACH_VERSION))
+    coach_file.close()
 
 if __name__ =='__main__':
     main()
