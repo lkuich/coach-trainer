@@ -28,7 +28,8 @@ class Flags:
     logging_verbosity,
     checkpoint_path,
     tf_lite,
-    tfjs
+    tfjs,
+    optimize_unity
   ):
     self.image_dir = image_dir
     self.output_graph=output_graph
@@ -58,3 +59,4 @@ class Flags:
     self.checkpoint_path=checkpoint_path
     self.tf_lite=tf_lite
     self.tfjs=tfjs
+    self.optimize_unity=optimize_unity

@@ -30,6 +30,7 @@ import sys
 import numpy as np
 import tensorflow as tf
 import tensorflow_hub as hub
+from tensorflow.python.tools import optimize_for_inference_lib
 
 FLAGS = None
 
@@ -864,6 +865,32 @@ def export_model(module_spec, class_count, saved_model_dir):
         legacy_init_op=tf.group(tf.tables_initializer(), name='legacy_init_op')
     )
 
+def optimize_for_inference(input_graph_path, input_names, output_names):
+  PLACEHOLDER_TYPE_ENUM = str(dtypes.float32.as_datatype_enum)
+
+  if not gfile.Exists(input_graph_path):
+    print("Input graph file '" + input_graph_path + "' does not exist!")
+    return -1
+
+  input_graph_def = graph_pb2.GraphDef()
+  with gfile.Open(input_graph_path, "rb") as f:
+    data = f.read()
+    input_graph_def.ParseFromString(data)
+
+  output_graph_def = optimize_for_inference_lib.optimize_for_inference(
+      input_graph_def,
+      input_names,
+      output_names,
+      _parse_placeholder_types(PLACEHOLDER_TYPE_ENUM),
+      False)
+
+  f = gfile.GFile('mobile.bytes', "w")
+  f.write(output_graph_def.SerializeToString())
+
+def _parse_placeholder_types(values):
+  """Extracts placeholder types from a comma separate list."""
+  values = [int(value) for value in values.split(",")]
+  return values if len(values) > 1 else values[0]
 
 def logging_level_verbosity(logging_verbosity):
   """Converts logging_level into TensorFlow logging verbosity value
@@ -1057,6 +1084,9 @@ def run():
     save_graph_to_file(FLAGS.output_graph, module_spec, class_count)
     with tf.gfile.GFile(FLAGS.output_labels, 'w') as f:
       f.write('\n'.join(image_lists.keys()) + '\n')
+
+    if FLAGS.optimize_unity:
+      optimize_for_inference(FLAGS.output_graph, [FLAGS.input_tensor_name], [FLAGS.final_tensor_name])
 
     if FLAGS.saved_model_dir:
       export_model(module_spec, class_count, FLAGS.saved_model_dir)

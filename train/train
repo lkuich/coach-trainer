@@ -72,6 +72,7 @@ def main():
         bottleneck_dir='/tmp/bottleneck',
         input_tensor_name='input',
         final_tensor_name='output',
+        optimize_unity=True,
         flip_left_right=False,
         random_crop=0,
         random_scale=0,
