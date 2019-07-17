@@ -15,8 +15,7 @@ from google.protobuf.json_format import MessageToJson
 def convert_barricuda(source_file, target_file, trim_unused_by_output=False, args=[]):
     # Te following code can be used as an example of API used from another module
     # convert() is the main entry point for converter
-    import tensorflow_to_barracuda as tf2bc
-    tf2bc.convert(source_file, target_file, trim_unused_by_output, args)
+    convert(source_file, target_file, trim_unused_by_output, args)
 
 # TODO: support more than 1 LSTM layer per model - prepend scope to names and inputs
 # TODO: support different activation functions in LSTM
@@ -1050,13 +1049,6 @@ def process_layer(layer, context, args):
             # as output from the network
             class_name = "Linear"
 
-    if args.print_layers or args.verbose:
-        var_tensors = [i for i in inputs if i not in model_tensors]
-        const_tensors = [i for i in inputs if i in model_tensors]
-        print(
-            "'%s' %s Vars:%s Const:%s" % (name, class_name, var_tensors, const_tensors)
-        )
-
     if class_name in known_activations:
         activation = class_name
         class_name = "Activation"
@@ -1339,18 +1331,7 @@ def process_model(model, args):
                 nodes = nodes_as_array[node_index:pattern_end]
                 name = nodes[-1].name
                 var_tensors, const_tensors = get_tensors(nodes)
-                if args.print_patterns or args.verbose:
-                    print(
-                        "PATTERN:",
-                        name,
-                        "~~",
-                        pattern_name,
-                        "<-",
-                        var_tensors,
-                        "+",
-                        [t.name for t in const_tensors],
-                    )
-                    print("        ", pattern)
+                
                 for n in nodes:
                     if n.op == "Const" or n.op == "Identity":
                         process_layer(n, o_context, args)
@@ -1494,40 +1475,16 @@ def convert(
     :param compress_f16: If true, the float values will be converted to f16
     :return:
     """
-    if type(verbose) == bool:
-        args = Struct()
-        args.verbose = verbose
-        args.print_layers = verbose
-        args.print_source_json = verbose
-        args.print_barracuda_json = verbose
-        args.print_layer_links = verbose
-        args.print_patterns = verbose
-        args.print_tensors = verbose
-        args.print_supported_ops = verbose
-    else:
-        args = verbose
-
-    if args.print_supported_ops:
-        barracuda.print_known_operations(known_classes, known_activations)
-
     # Load Tensorflow model
     print("Converting %s to %s" % (source_file, target_file))
     f = open(source_file, "rb")
     i_model = tf.GraphDef()
     i_model.ParseFromString(f.read())
 
-    if args.verbose:
-        print("OP_TYPES:", {layer.op for layer in i_model.node})
-
-    if args.print_source_json or args.verbose:
-        for layer in i_model.node:
-            if not layer.op == "Const":
-                print("MODEL:", MessageToJson(layer) + ",")
-
     # Convert
     o_model = barracuda.Model()
     o_model.layers, o_input_shapes, o_model.tensors, o_model.memories, o_model.globals = process_model(
-        i_model, args
+        i_model, []
     )
 
     # Cleanup unconnected Identities (they might linger after processing complex node patterns like LSTM)
@@ -1552,7 +1509,7 @@ def convert(
     # Trim
     if trim_unused_by_output:
         o_model.layers = barracuda.trim(
-            o_model.layers, trim_unused_by_output, args.verbose
+            o_model.layers, trim_unused_by_output, verbose
         )
 
     # Create load layer for constants
@@ -1624,16 +1581,16 @@ def convert(
 
     # Sort model so that layer inputs are always ready upfront
     o_model.layers = barracuda.sort(
-        o_model.layers, o_model.inputs, o_model.memories, args.verbose
+        o_model.layers, o_model.inputs, o_model.memories, verbose
     )
-    o_model.layers = barracuda.fuse(o_model.layers, args.verbose)
+    o_model.layers = barracuda.fuse(o_model.layers, verbose)
 
     # Summary
     barracuda.summary(
         o_model,
-        print_layer_links=args.print_layer_links or args.verbose,
-        print_barracuda_json=args.print_barracuda_json or args.verbose,
-        print_tensors=args.print_tensors or args.verbose,
+        print_layer_links=verbose,
+        print_barracuda_json=verbose,
+        print_tensors=verbose,
     )
 
     # Write to file

@@ -30,6 +30,10 @@ import sys
 import numpy as np
 import tensorflow as tf
 import tensorflow_hub as hub
+
+from tensorflow.python.platform import gfile
+from tensorflow.core.framework import graph_pb2
+from tensorflow.python.framework import dtypes
 from tensorflow.python.tools import optimize_for_inference_lib
 
 FLAGS = None
@@ -865,7 +869,7 @@ def export_model(module_spec, class_count, saved_model_dir):
         legacy_init_op=tf.group(tf.tables_initializer(), name='legacy_init_op')
     )
 
-def optimize_for_inference(input_graph_path, input_names, output_names):
+def optimize_for_inference(input_graph_path, output_path, input_names, output_names):
   PLACEHOLDER_TYPE_ENUM = str(dtypes.float32.as_datatype_enum)
 
   if not gfile.Exists(input_graph_path):
@@ -884,8 +888,12 @@ def optimize_for_inference(input_graph_path, input_names, output_names):
       _parse_placeholder_types(PLACEHOLDER_TYPE_ENUM),
       False)
 
-  f = gfile.GFile('mobile.bytes', "w")
+  f = gfile.GFile(output_path, "w")
   f.write(output_graph_def.SerializeToString())
+
+def convert_to_barricuda(source_file, target_file):
+  from mlagents.trainers.tensorflow_to_barracuda import convert_barricuda
+  convert_barricuda(source_file, target_file)
 
 def _parse_placeholder_types(values):
   """Extracts placeholder types from a comma separate list."""
@@ -1085,11 +1093,12 @@ def run():
     with tf.gfile.GFile(FLAGS.output_labels, 'w') as f:
       f.write('\n'.join(image_lists.keys()) + '\n')
 
-    if FLAGS.optimize_unity:
-      optimize_for_inference(FLAGS.output_graph, [FLAGS.input_tensor_name], [FLAGS.final_tensor_name])
-
     if FLAGS.saved_model_dir:
       export_model(module_spec, class_count, FLAGS.saved_model_dir)
+
+    if FLAGS.unity:
+      convert_to_barricuda(FLAGS.output_graph, FLAGS.unity)
+      # optimize_for_inference(FLAGS.output_graph, FLAGS.unity, [FLAGS.input_tensor_name], [FLAGS.final_tensor_name])
 
     if FLAGS.tf_lite:
       write_tf_lite(FLAGS.tf_lite)

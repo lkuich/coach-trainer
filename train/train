@@ -72,7 +72,6 @@ def main():
         bottleneck_dir='/tmp/bottleneck',
         input_tensor_name='input',
         final_tensor_name='output',
-        optimize_unity=True,
         flip_left_right=False,
         random_crop=0,
         random_scale=0,
@@ -82,7 +81,8 @@ def main():
         logging_verbosity='INFO',
         checkpoint_path='/tmp/_retrain_checkpoint',
         tf_lite=os.path.join(output_dir, 'mobile.tflite'),
-        tfjs=os.path.join(output_dir, 'tfjs')
+        tfjs=os.path.join(output_dir, 'tfjs'),
+        unity=os.path.join(output_dir, 'unity.bytes')
     )
     retrain.run()
 
