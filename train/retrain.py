@@ -1112,5 +1112,6 @@ def write_tf_lite(path):
     open(path, "wb").write(tflite_model)
 
 def write_to_js(path):
-    import tensorflowjs as tfjs
-    tfjs.converters.convert_tf_saved_model(FLAGS.saved_model_dir, FLAGS.final_tensor_name, path)
+    # TODO: Figure out dependancy issue
+    #import tensorflowjs as tfjs
+    #tfjs.converters.convert_tf_saved_model(FLAGS.saved_model_dir, FLAGS.final_tensor_name, path)

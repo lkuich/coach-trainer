@@ -42,10 +42,9 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 # tensorflowjs==0.8.0
 RUN pip3 install \
     tensorflow-gpu==1.12 \
-    tensorflowjs==0.8.0 \
-    tensorflow-hub \
-    pillow \
-    scipy \
+    tensorflow-hub-0.5.0 \
+    Pillow-5.4.1 \
+    scipy-1.3.0 \
     mlagents_envs==0.8.2 \
     && rm -rf /root/.cache
 
