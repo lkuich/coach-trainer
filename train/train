@@ -46,6 +46,8 @@ def main():
             untar=True)
 
     output_dir = os.path.join(prefix, 'model')
+    if not os.path.isdir(output_dir):
+        os.mkdir(output_dir)
     print('output_dir: ' + output_dir)
 
     '''
