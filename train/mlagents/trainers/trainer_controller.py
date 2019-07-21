@@ -29,12 +29,12 @@ class TrainerController(object):
         summaries_dir: str,
         run_id: str,
         save_freq: int,
-        meta_curriculum: Optional[MetaCurriculum],
+        meta_curriculum,
         load: bool,
         train: bool,
         keep_checkpoints: int,
-        lesson: Optional[int],
-        external_brains: Dict[str, BrainParameters],
+        lesson,
+        external_brains,
         training_seed: int,
         fast_simulation: bool,
     ):
@@ -63,8 +63,8 @@ class TrainerController(object):
         self.load_model = load
         self.train_model = train
         self.keep_checkpoints = keep_checkpoints
-        self.trainers: Dict[str, Trainer] = {}
-        self.trainer_metrics: Dict[str, TrainerMetrics] = {}
+        self.trainers = {}
+        self.trainer_metrics = {}
         self.global_step = 0
         self.meta_curriculum = meta_curriculum
         self.seed = training_seed
@@ -125,7 +125,7 @@ class TrainerController(object):
         for brain_name in self.trainers.keys():
             self.trainers[brain_name].export_model()
 
-    def initialize_trainers(self, trainer_config: Dict[str, Dict[str, str]]):
+    def initialize_trainers(self, trainer_config):
         """
         Initialization of the trainers
         :param trainer_config: The configurations of the trainers

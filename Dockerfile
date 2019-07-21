@@ -46,7 +46,6 @@ RUN pip3 install \
     Pillow==5.4.1 \
     scipy==1.3.0 \
     mlagents_envs==0.8.2 \
-    typing==3.7.4 \
     && rm -rf /root/.cache
 
 # Set some environment variables. PYTHONUNBUFFERED keeps Python from buffering our standard
