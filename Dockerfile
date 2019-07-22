@@ -41,7 +41,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 # image, which reduces start up time.
 # tensorflowjs==0.8.0
 RUN pip3 install \
-    tensorflow-gpu==1.12 \
+    tensorflow-gpu==1.12.2 \
     tensorflow-hub==0.5.0 \
     Pillow==5.4.1 \
     scipy==1.3.0 \
