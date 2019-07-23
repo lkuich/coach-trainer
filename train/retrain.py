@@ -1093,7 +1093,7 @@ def run():
     with tf.gfile.GFile(FLAGS.output_labels, 'w') as f:
       f.write('\n'.join(image_lists.keys()) + '\n')
 
-    optimize_for_inference(FLAGS.output_graph, FLAGS.output_graph + 'o', [FLAGS.input_tensor_name], [FLAGS.final_tensor_name])
+    optimize_for_inference(FLAGS.output_graph, FLAGS.output_graph, [FLAGS.input_tensor_name], [FLAGS.final_tensor_name])
 
     if FLAGS.saved_model_dir:
       export_model(module_spec, class_count, FLAGS.saved_model_dir)
