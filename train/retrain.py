@@ -1095,6 +1095,7 @@ def run():
 
     optimize_for_inference(FLAGS.output_graph, FLAGS.output_graph, [FLAGS.input_tensor_name], [FLAGS.final_tensor_name])
 
+
     if FLAGS.saved_model_dir:
       export_model(module_spec, class_count, FLAGS.saved_model_dir)
 

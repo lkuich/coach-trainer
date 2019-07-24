@@ -41,7 +41,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 # image, which reduces start up time.
 # tensorflowjs==0.8.0
 RUN pip3 install \
-    tensorflow-gpu==1.12.2 \
+    tensorflow-gpu==1.14 \
     tensorflow-hub==0.5.0 \
     Pillow==5.4.1 \
     scipy==1.3.0 \
@@ -53,6 +53,7 @@ RUN pip3 install \
 # keeps Python from writing the .pyc files which are unnecessary in this case. We also update
 # PATH so that the train and serve programs are found when the container is invoked.
 
+ENV TF_XLA_FLAGS=--tf_xla_cpu_global_jit
 ENV PYTHONUNBUFFERED=TRUE
 ENV PYTHONDONTWRITEBYTECODE=TRUE
 ENV PATH="/opt/program:${PATH}"
