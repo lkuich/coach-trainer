@@ -28,7 +28,7 @@ def main():
         
         platform = env.hyperparameters.get('platform', default='frozen', object_type=str)
         #epochs = env.hyperparameters.get('epochs', default=1, object_type=int)
-        steps = env.hyperparameters.get('steps', default=200, object_type=int)
+        steps = env.hyperparameters.get('steps', default=5000, object_type=int)
         feature_extractor_url = os.path.join('models', env.hyperparameters.get('module', default="mobilenet_v2_100_224", object_type=str))
         data_root = env.channel_dirs['train']
         
@@ -39,7 +39,7 @@ def main():
         
         platform = 'frozen'
         #epochs = 0
-        steps = 1
+        steps = 5
         feature_extractor_url = sys.argv[1]
         data_root = tf.keras.utils.get_file(
             'flower_photos','https://storage.googleapis.com/download.tensorflow.org/example_images/flower_photos.tgz',
