@@ -1,6 +1,6 @@
 #!/bin/bash
 
-DOCKER_COMPOSE_LOCATION=compose.yaml
+DOCKER_COMPOSE_LOCATION=docker-compose.yml
 PROJECT_NAME=coach-trainer
 
 if [ "$1" == "app" ]; then
