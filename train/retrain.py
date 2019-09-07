@@ -26,6 +26,7 @@ import os.path
 import random
 import re
 import sys
+import subprocess
 
 import numpy as np
 import tensorflow as tf
@@ -1108,12 +1109,10 @@ def run():
       write_to_js(FLAGS.tfjs)
 
 def write_tf_lite(path):
-    converter = tf.contrib.lite.TFLiteConverter.from_saved_model(FLAGS.saved_model_dir)
+    converter = tf.lite.TFLiteConverter.from_saved_model(FLAGS.saved_model_dir)
     tflite_model = converter.convert()
     open(path, "wb").write(tflite_model)
 
 def write_to_js(path):
-    pass
-    # TODO: Figure out dependancy issue
-    #import tensorflowjs as tfjs
-    #tfjs.converters.convert_tf_saved_model(FLAGS.saved_model_dir, FLAGS.final_tensor_name, path)
+  #print(f"{FLAGS.saved_model_dir} | {FLAGS.final_tensor_name} | {path}")
+  subprocess.run(["tensorflowjs_converter", "--input_format=tf_saved_model", "/opt/ml/model/saved_model", "/opt/ml/model/tfjs"])

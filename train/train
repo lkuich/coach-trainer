@@ -36,6 +36,9 @@ def main():
     else:
         import sys
         print('Running locally')
+
+        if not os.path.exists('/opt/ml/model'):
+            os.makedirs('/opt/ml/model')
         
         platform = 'frozen'
         #epochs = 0
@@ -92,6 +95,8 @@ def main():
     with open(os.path.join(output_dir, 'coach_version'), 'w') as coach_file:
         coach_file.write(str(COACH_VERSION))
     coach_file.close()
+
+    print('Done!')
 
 if __name__ =='__main__':
     main()
