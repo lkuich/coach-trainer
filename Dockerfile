@@ -61,6 +61,7 @@ RUN pip3 install \
     six==1.11.0 \
     tensorboard==1.14.0 \
     tensorflow-estimator==1.14.0 \
+    tensorflow==1.14.0 \
     tensorflow-gpu==1.14.0 \
     tensorflow-hub==0.5.0 \
     tensorflowjs==1.2.9 \
