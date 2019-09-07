@@ -15,7 +15,7 @@ import math
 import retrain
 import flags
 
-COACH_VERSION=1
+COACH_VERSION=2
 __PROD__ = os.environ.get('LOCAL') != 'True'
 prefix = '/opt/ml/'
 
