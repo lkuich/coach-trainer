@@ -20,6 +20,9 @@ __PROD__ = os.environ.get('LOCAL') != 'True'
 prefix = '/opt/ml/'
 
 def main():
+    if (tf.test.is_gpu_available() is False):
+        raise Exception("GPU is unavailable")
+    
     if __PROD__:
         print("Running in production")
 

@@ -44,7 +44,7 @@ RUN pip3 install \
     Keras-Applications==1.0.8 \
     Keras-Preprocessing==1.1.0 \
     Markdown==3.1.1 \
-    mlagents-envs==0.8.2 \
+    mlagents-envs==0.9.3 \
     more-itertools==7.2.0 \
     numpy==1.16.4 \
     Pillow==5.4.1 \

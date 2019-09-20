@@ -893,8 +893,8 @@ def optimize_for_inference(input_graph_path, output_path, input_names, output_na
   f.write(output_graph_def.SerializeToString())
 
 def convert_to_barricuda(source_file, target_file):
-  from mlagents.trainers.tensorflow_to_barracuda import convert_barricuda
-  convert_barricuda(source_file, target_file)
+  from mlagents.trainers.tensorflow_to_barracuda import convert
+  convert(source_file, target_file)
 
 def _parse_placeholder_types(values):
   """Extracts placeholder types from a comma separate list."""
@@ -967,7 +967,7 @@ def run():
          class_count, FLAGS.final_tensor_name, bottleneck_tensor,
          wants_quantization, is_training=True)
 
-  with tf.Session(graph=graph) as sess:
+  with tf.Session(graph=graph, config=tf.ConfigProto(log_device_placement=True)) as sess:
     # Initialize all weights: for the module to their pretrained values,
     # and for the newly added retraining layer to random initial values.
     init = tf.global_variables_initializer()
