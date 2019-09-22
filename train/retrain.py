@@ -26,6 +26,7 @@ import os.path
 import random
 import re
 import sys
+import subprocess
 
 import numpy as np
 import tensorflow as tf
@@ -892,8 +893,8 @@ def optimize_for_inference(input_graph_path, output_path, input_names, output_na
   f.write(output_graph_def.SerializeToString())
 
 def convert_to_barricuda(source_file, target_file):
-  from mlagents.trainers.tensorflow_to_barracuda import convert_barricuda
-  convert_barricuda(source_file, target_file)
+  from mlagents.trainers.tensorflow_to_barracuda import convert
+  convert(source_file, target_file)
 
 def _parse_placeholder_types(values):
   """Extracts placeholder types from a comma separate list."""
@@ -966,7 +967,7 @@ def run():
          class_count, FLAGS.final_tensor_name, bottleneck_tensor,
          wants_quantization, is_training=True)
 
-  with tf.Session(graph=graph) as sess:
+  with tf.Session(graph=graph, config=tf.ConfigProto(log_device_placement=True)) as sess:
     # Initialize all weights: for the module to their pretrained values,
     # and for the newly added retraining layer to random initial values.
     init = tf.global_variables_initializer()
@@ -1108,12 +1109,10 @@ def run():
       write_to_js(FLAGS.tfjs)
 
 def write_tf_lite(path):
-    converter = tf.contrib.lite.TFLiteConverter.from_saved_model(FLAGS.saved_model_dir)
+    converter = tf.lite.TFLiteConverter.from_saved_model(FLAGS.saved_model_dir)
     tflite_model = converter.convert()
     open(path, "wb").write(tflite_model)
 
 def write_to_js(path):
-    pass
-    # TODO: Figure out dependancy issue
-    #import tensorflowjs as tfjs
-    #tfjs.converters.convert_tf_saved_model(FLAGS.saved_model_dir, FLAGS.final_tensor_name, path)
+  #print(f"{FLAGS.saved_model_dir} | {FLAGS.final_tensor_name} | {path}")
+  subprocess.run(["tensorflowjs_converter", "--input_format=tf_saved_model", "/opt/ml/model/saved_model", "/opt/ml/model/tfjs"])
