@@ -5,7 +5,8 @@ MAINTAINER Loren Kuich <loren@lkuich.com>
 
 RUN pip3 install \
     mlagents-envs==0.9.3 \
-    tensorflow-hub==0.5.0
+    tensorflow-hub==0.5.0 \
+    keras
 RUN pip3 install tensorflowjs==1.2.6 --no-dependencies
 
 RUN rm -rf /root/.cache
