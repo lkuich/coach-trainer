@@ -3,5 +3,14 @@
 DOCKER_COMPOSE_LOCATION=docker-compose.yml
 PROJECT_NAME=coach-trainer
 
-echo 'Entering '"$PROJECT_NAME"' shell'
-docker-compose -p $PROJECT_NAME -f $DOCKER_COMPOSE_LOCATION run app /bin/bash 
+if [ "$1" == "build" ]; then
+  docker-compose up --build
+  docker-compose -p $PROJECT_NAME -f $DOCKER_COMPOSE_LOCATION run app /bin/bash 
+  exit 0
+fi
+
+if [ "$1" == "app" ]; then
+  echo 'Entering '"$PROJECT_NAME"' shell'
+  docker-compose -p $PROJECT_NAME -f $DOCKER_COMPOSE_LOCATION run app /bin/bash 
+  exit 0
+fi
