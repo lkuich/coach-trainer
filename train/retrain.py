@@ -46,6 +46,9 @@ MAX_NUM_IMAGES_PER_CLASS = 2 ** 27 - 1  # ~134M
 FAKE_QUANT_OPS = ('FakeQuantWithMinMaxVars',
                   'FakeQuantWithMinMaxVarsPerChannel')
 
+def throw_error(msg):
+  tf.logging.error(msg)
+  raise ValueError(msg)
 
 def create_image_lists(image_dir, testing_percentage, validation_percentage):
   """Builds a list of training images from the file system.
@@ -65,7 +68,7 @@ def create_image_lists(image_dir, testing_percentage, validation_percentage):
     The order of items defines the class indices.
   """
   if not tf.gfile.Exists(image_dir):
-    tf.logging.error("Image directory '" + image_dir + "' not found.")
+    throw_error("Image directory '" + image_dir + "' not found.")
     return None
   result = collections.OrderedDict()
   sub_dirs = sorted(x[0] for x in tf.gfile.Walk(image_dir))
@@ -930,7 +933,7 @@ def run():
   tf.logging.set_verbosity(logging_verbosity)
 
   if not FLAGS.image_dir:
-    tf.logging.error('Must set flag --image_dir.')
+    throw_error('Must set flag --image_dir.')
     return -1
 
   # Prepare necessary directories that can be used during training
@@ -941,10 +944,10 @@ def run():
                                    FLAGS.validation_percentage)
   class_count = len(image_lists.keys())
   if class_count == 0:
-    tf.logging.error('No valid folders of images found at ' + FLAGS.image_dir)
+    throw_error('No valid folders of images found at ' + FLAGS.image_dir)
     return -1
   if class_count == 1:
-    tf.logging.error('Only one valid folder of images found at ' +
+    throw_error('Only one valid folder of images found at ' +
                      FLAGS.image_dir +
                      ' - multiple classes are needed for classification.')
     return -1
