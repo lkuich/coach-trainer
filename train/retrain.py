@@ -102,7 +102,7 @@ def create_image_lists(image_dir, testing_percentage, validation_percentage):
       tf.logging.warning(
           'WARNING: Folder {} has more than {} images. Some images will '
           'never be selected.'.format(dir_name, MAX_NUM_IMAGES_PER_CLASS))
-    label_name = re.sub(r'[^a-z0-9]+', ' ', dir_name.lower())
+    label_name = dir_name #TODO: re.sub(r'[^a-z0-9]+', ' ', dir_name.lower())
     training_images = []
     testing_images = []
     validation_images = []
@@ -1095,6 +1095,8 @@ def run():
       tf.logging.info('The model is instrumented for quantization with TF-Lite')
     save_graph_to_file(FLAGS.output_graph, module_spec, class_count)
     with tf.gfile.GFile(FLAGS.output_labels, 'w') as f:
+      print("LABELS-----------")
+      print(image_lists.keys())
       f.write('\n'.join(image_lists.keys()) + '\n')
 
     optimize_for_inference(FLAGS.output_graph, FLAGS.output_graph, [FLAGS.input_tensor_name], [FLAGS.final_tensor_name])
