@@ -72,6 +72,9 @@ def create_image_lists(image_dir, testing_percentage, validation_percentage):
     return None
   result = collections.OrderedDict()
   sub_dirs = sorted(x[0] for x in tf.gfile.Walk(image_dir))
+  print("CIL:Snooping: " + image_dir)
+  for s in sub_dirs:
+    print("CIL:Snooping: " + sub_dirs)
   # The root directory comes first, so skip it.
   is_root_dir = True
   for sub_dir in sub_dirs:
@@ -88,19 +91,19 @@ def create_image_lists(image_dir, testing_percentage, validation_percentage):
 
     if dir_name == image_dir:
       continue
-    tf.logging.info("Looking for images in '" + dir_name + "'")
+    tf.logging.info("CIL:Looking for images in '" + dir_name + "'")
     for extension in extensions:
       file_glob = os.path.join(image_dir, dir_name, '*.' + extension)
       file_list.extend(tf.gfile.Glob(file_glob))
     if not file_list:
-      tf.logging.warning('No files found')
+      tf.logging.warning('CIL:No files found: ' + dir_name)
       continue
     if len(file_list) < 20:
       tf.logging.warning(
-          'WARNING: Folder has less than 20 images, which may cause issues.')
+          'CIL:WARNING: Folder has less than 20 images, which may cause issues.')
     elif len(file_list) > MAX_NUM_IMAGES_PER_CLASS:
       tf.logging.warning(
-          'WARNING: Folder {} has more than {} images. Some images will '
+          'CIL:WARNING: Folder {} has more than {} images. Some images will '
           'never be selected.'.format(dir_name, MAX_NUM_IMAGES_PER_CLASS))
     label_name = dir_name #TODO: re.sub(r'[^a-z0-9]+', ' ', dir_name.lower())
     training_images = []
