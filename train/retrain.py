@@ -74,7 +74,7 @@ def create_image_lists(image_dir, testing_percentage, validation_percentage):
   sub_dirs = sorted(x[0] for x in tf.gfile.Walk(image_dir))
   print("CIL:Snooping: " + image_dir)
   for s in sub_dirs:
-    print("CIL:Snooping: " + sub_dirs)
+    print("CIL:Snooping: " + s)
   # The root directory comes first, so skip it.
   is_root_dir = True
   for sub_dir in sub_dirs:
