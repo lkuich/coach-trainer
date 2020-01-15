@@ -614,7 +614,7 @@ def add_input_distortions(flip_left_right, random_crop, random_scale,
   distort_result = tf.expand_dims(brightened_image, 0, name='DistortResult')
   return jpeg_data, distort_result
 
-
+'''
 def variable_summaries(var):
   """Attach a lot of summaries to a Tensor (for TensorBoard visualization)."""
   with tf.name_scope('summaries'):
@@ -626,6 +626,7 @@ def variable_summaries(var):
     tf.summary.scalar('max', tf.reduce_max(var))
     tf.summary.scalar('min', tf.reduce_min(var))
     tf.summary.histogram('histogram', var)
+'''
 
 
 def add_final_retrain_ops(class_count, final_tensor_name, bottleneck_tensor,
@@ -671,15 +672,15 @@ def add_final_retrain_ops(class_count, final_tensor_name, bottleneck_tensor,
       initial_value = tf.truncated_normal(
           [bottleneck_tensor_size, class_count], stddev=0.001)
       layer_weights = tf.Variable(initial_value, name='final_weights')
-      variable_summaries(layer_weights)
+      #variable_summaries(layer_weights)
 
     with tf.name_scope('biases'):
       layer_biases = tf.Variable(tf.zeros([class_count]), name='final_biases')
-      variable_summaries(layer_biases)
+      #variable_summaries(layer_biases)
 
     with tf.name_scope('Wx_plus_b'):
       logits = tf.matmul(bottleneck_input, layer_weights) + layer_biases
-      tf.summary.histogram('pre_activations', logits)
+      #tf.summary.histogram('pre_activations', logits)
 
   final_tensor = tf.nn.softmax(logits, name=final_tensor_name)
 
@@ -693,7 +694,7 @@ def add_final_retrain_ops(class_count, final_tensor_name, bottleneck_tensor,
     else:
       tf.contrib.quantize.create_eval_graph()
 
-  tf.summary.histogram('activations', final_tensor)
+  #tf.summary.histogram('activations', final_tensor)
 
   # If this is an eval graph, we don't need to add loss ops or an optimizer.
   if not is_training:
@@ -703,7 +704,7 @@ def add_final_retrain_ops(class_count, final_tensor_name, bottleneck_tensor,
     cross_entropy_mean = tf.losses.sparse_softmax_cross_entropy(
         labels=ground_truth_input, logits=logits)
 
-  tf.summary.scalar('cross_entropy', cross_entropy_mean)
+  #tf.summary.scalar('cross_entropy', cross_entropy_mean)
 
   with tf.name_scope('train'):
     optimizer = tf.train.GradientDescentOptimizer(FLAGS.learning_rate)
@@ -730,7 +731,7 @@ def add_evaluation_step(result_tensor, ground_truth_tensor):
       correct_prediction = tf.equal(prediction, ground_truth_tensor)
     with tf.name_scope('accuracy'):
       evaluation_step = tf.reduce_mean(tf.cast(correct_prediction, tf.float32))
-  tf.summary.scalar('accuracy', evaluation_step)
+  #tf.summary.scalar('accuracy', evaluation_step)
   return evaluation_step, prediction
 
 
@@ -823,10 +824,6 @@ def save_graph_to_file(graph_file_name, module_spec, class_count):
 
 
 def prepare_file_system():
-  # Set up the directory we'll write summaries to for TensorBoard
-  if tf.gfile.Exists(FLAGS.summaries_dir):
-    tf.gfile.DeleteRecursively(FLAGS.summaries_dir)
-  tf.gfile.MakeDirs(FLAGS.summaries_dir)
   if FLAGS.intermediate_store_frequency > 0:
     ensure_dir_exists(FLAGS.intermediate_output_graphs_dir)
   return
@@ -961,7 +958,6 @@ def run():
       FLAGS.random_brightness)
 
   # Set up the pre-trained graph.
-  print(FLAGS.tfhub_module)
   module_spec = hub.load_module_spec(FLAGS.tfhub_module)
   graph, bottleneck_tensor, resized_image_tensor, wants_quantization = (
       create_module_graph(module_spec))
@@ -999,14 +995,6 @@ def run():
     # Create the operations we need to evaluate the accuracy of our new layer.
     evaluation_step, _ = add_evaluation_step(final_tensor, ground_truth_input)
 
-    # Merge all the summaries and write them out to the summaries_dir
-    merged = tf.summary.merge_all()
-    train_writer = tf.summary.FileWriter(FLAGS.summaries_dir + '/train',
-                                         sess.graph)
-
-    validation_writer = tf.summary.FileWriter(
-        FLAGS.summaries_dir + '/validation')
-
     # Create a train saver that is used to restore values into an eval graph
     # when exporting models.
     train_saver = tf.train.Saver()
@@ -1030,11 +1018,11 @@ def run():
              FLAGS.tfhub_module)
       # Feed the bottlenecks and ground truth into the graph, and run a training
       # step. Capture training summaries for TensorBoard with the `merged` op.
-      train_summary, _ = sess.run(
-          [merged, train_step],
+      sess.run(
+          train_step,
           feed_dict={bottleneck_input: train_bottlenecks,
                      ground_truth_input: train_ground_truth})
-      train_writer.add_summary(train_summary, i)
+      #train_writer.add_summary(train_summary, i)
 
       # Every so often, print out how well the graph is training.
       is_last_step = (i + 1 == FLAGS.how_many_training_steps)
@@ -1058,11 +1046,11 @@ def run():
                 FLAGS.tfhub_module))
         # Run a validation step and capture training summaries for TensorBoard
         # with the `merged` op.
-        validation_summary, validation_accuracy = sess.run(
-            [merged, evaluation_step],
+        validation_accuracy = sess.run(
+            evaluation_step,
             feed_dict={bottleneck_input: validation_bottlenecks,
                        ground_truth_input: validation_ground_truth})
-        validation_writer.add_summary(validation_summary, i)
+        #validation_writer.add_summary(validation_summary, i)
         tf.logging.info('%s: Step %d: Validation accuracy = %.1f%% (N=%d)' %
                         (datetime.now(), i, validation_accuracy * 100,
                          len(validation_bottlenecks)))
