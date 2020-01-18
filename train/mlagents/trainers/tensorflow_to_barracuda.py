@@ -617,11 +617,13 @@ def get_epsilon(layer):
 
 
 def get_layer_rank(layer):
-    shape = get_attr(layer, "shape")
+    shape = get_attr(layer, 'shape')
     if not shape:
         outputShapes = get_attr(layer, '_output_shapes')
         if outputShapes:
             shape = outputShapes[0]
+    if not shape:
+        return None
     if isinstance(shape, list):
         return 1
     shape = [dim.size for dim in shape.dim]
