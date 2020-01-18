@@ -4,7 +4,7 @@ FROM tensorflow/tensorflow:1.14.0-gpu-py3
 MAINTAINER Loren Kuich <loren@lkuich.com>
 
 RUN pip3 install \
-    mlagents-envs==0.9.3 \
+    mlagents-envs==0.13.0 \
     tensorflow-hub==0.5.0
 RUN pip3 install tensorflowjs==1.2.6 --no-dependencies
 
